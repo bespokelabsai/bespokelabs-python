@@ -673,12 +673,12 @@ class TestBespokelabs:
     @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     def test_retrying_timeout_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
-        respx_mock.post("/v0/argus/factcheck").mock(side_effect=httpx.TimeoutException("Test timeout error"))
+        respx_mock.post("/v0/factcheck").mock(side_effect=httpx.TimeoutException("Test timeout error"))
 
         with pytest.raises(APITimeoutError):
             self.client.post(
-                "/v0/argus/factcheck",
-                body=cast(object, dict(claim="claim", contexts=["string", "string", "string"])),
+                "/v0/factcheck",
+                body=cast(object, dict(claim="claim")),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
             )
@@ -688,12 +688,12 @@ class TestBespokelabs:
     @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
-        respx_mock.post("/v0/argus/factcheck").mock(return_value=httpx.Response(500))
+        respx_mock.post("/v0/factcheck").mock(return_value=httpx.Response(500))
 
         with pytest.raises(APIStatusError):
             self.client.post(
-                "/v0/argus/factcheck",
-                body=cast(object, dict(claim="claim", contexts=["string", "string", "string"])),
+                "/v0/factcheck",
+                body=cast(object, dict(claim="claim")),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
             )
@@ -715,11 +715,9 @@ class TestBespokelabs:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.post("/v0/argus/factcheck").mock(side_effect=retry_handler)
+        respx_mock.post("/v0/factcheck").mock(side_effect=retry_handler)
 
-        response = client.argus.factcheck.with_raw_response.create(
-            claim="claim", contexts=["string", "string", "string"]
-        )
+        response = client.argus.factcheck.with_raw_response.create(claim="claim")
 
         assert response.retries_taken == failures_before_success
 
@@ -1357,12 +1355,12 @@ class TestAsyncBespokelabs:
     @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     async def test_retrying_timeout_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
-        respx_mock.post("/v0/argus/factcheck").mock(side_effect=httpx.TimeoutException("Test timeout error"))
+        respx_mock.post("/v0/factcheck").mock(side_effect=httpx.TimeoutException("Test timeout error"))
 
         with pytest.raises(APITimeoutError):
             await self.client.post(
-                "/v0/argus/factcheck",
-                body=cast(object, dict(claim="claim", contexts=["string", "string", "string"])),
+                "/v0/factcheck",
+                body=cast(object, dict(claim="claim")),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
             )
@@ -1372,12 +1370,12 @@ class TestAsyncBespokelabs:
     @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     async def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
-        respx_mock.post("/v0/argus/factcheck").mock(return_value=httpx.Response(500))
+        respx_mock.post("/v0/factcheck").mock(return_value=httpx.Response(500))
 
         with pytest.raises(APIStatusError):
             await self.client.post(
-                "/v0/argus/factcheck",
-                body=cast(object, dict(claim="claim", contexts=["string", "string", "string"])),
+                "/v0/factcheck",
+                body=cast(object, dict(claim="claim")),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
             )
@@ -1402,10 +1400,8 @@ class TestAsyncBespokelabs:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.post("/v0/argus/factcheck").mock(side_effect=retry_handler)
+        respx_mock.post("/v0/factcheck").mock(side_effect=retry_handler)
 
-        response = await client.argus.factcheck.with_raw_response.create(
-            claim="claim", contexts=["string", "string", "string"]
-        )
+        response = await client.argus.factcheck.with_raw_response.create(claim="claim")
 
         assert response.retries_taken == failures_before_success
