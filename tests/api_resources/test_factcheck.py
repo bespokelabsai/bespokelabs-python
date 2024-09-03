@@ -21,13 +21,6 @@ class TestFactcheck:
     def test_method_create(self, client: BespokeLabs) -> None:
         factcheck = client.factcheck.create(
             claim="claim",
-        )
-        assert_matches_type(FactcheckCreateResponse, factcheck, path=["response"])
-
-    @parametrize
-    def test_method_create_with_all_params(self, client: BespokeLabs) -> None:
-        factcheck = client.factcheck.create(
-            claim="claim",
             context="context",
         )
         assert_matches_type(FactcheckCreateResponse, factcheck, path=["response"])
@@ -36,6 +29,7 @@ class TestFactcheck:
     def test_raw_response_create(self, client: BespokeLabs) -> None:
         response = client.factcheck.with_raw_response.create(
             claim="claim",
+            context="context",
         )
 
         assert response.is_closed is True
@@ -47,6 +41,7 @@ class TestFactcheck:
     def test_streaming_response_create(self, client: BespokeLabs) -> None:
         with client.factcheck.with_streaming_response.create(
             claim="claim",
+            context="context",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -64,13 +59,6 @@ class TestAsyncFactcheck:
     async def test_method_create(self, async_client: AsyncBespokeLabs) -> None:
         factcheck = await async_client.factcheck.create(
             claim="claim",
-        )
-        assert_matches_type(FactcheckCreateResponse, factcheck, path=["response"])
-
-    @parametrize
-    async def test_method_create_with_all_params(self, async_client: AsyncBespokeLabs) -> None:
-        factcheck = await async_client.factcheck.create(
-            claim="claim",
             context="context",
         )
         assert_matches_type(FactcheckCreateResponse, factcheck, path=["response"])
@@ -79,6 +67,7 @@ class TestAsyncFactcheck:
     async def test_raw_response_create(self, async_client: AsyncBespokeLabs) -> None:
         response = await async_client.factcheck.with_raw_response.create(
             claim="claim",
+            context="context",
         )
 
         assert response.is_closed is True
@@ -90,6 +79,7 @@ class TestAsyncFactcheck:
     async def test_streaming_response_create(self, async_client: AsyncBespokeLabs) -> None:
         async with async_client.factcheck.with_streaming_response.create(
             claim="claim",
+            context="context",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"

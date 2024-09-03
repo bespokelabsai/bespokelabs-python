@@ -724,7 +724,7 @@ class TestBespokeLabs:
         with pytest.raises(APITimeoutError):
             self.client.post(
                 "/v0/factcheck",
-                body=cast(object, dict(claim="claim")),
+                body=cast(object, dict(claim="claim", context="context")),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
             )
@@ -739,7 +739,7 @@ class TestBespokeLabs:
         with pytest.raises(APIStatusError):
             self.client.post(
                 "/v0/factcheck",
-                body=cast(object, dict(claim="claim")),
+                body=cast(object, dict(claim="claim", context="context")),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
             )
@@ -763,7 +763,7 @@ class TestBespokeLabs:
 
         respx_mock.post("/v0/factcheck").mock(side_effect=retry_handler)
 
-        response = client.factcheck.with_raw_response.create(claim="claim")
+        response = client.factcheck.with_raw_response.create(claim="claim", context="context")
 
         assert response.retries_taken == failures_before_success
 
@@ -1446,7 +1446,7 @@ class TestAsyncBespokeLabs:
         with pytest.raises(APITimeoutError):
             await self.client.post(
                 "/v0/factcheck",
-                body=cast(object, dict(claim="claim")),
+                body=cast(object, dict(claim="claim", context="context")),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
             )
@@ -1461,7 +1461,7 @@ class TestAsyncBespokeLabs:
         with pytest.raises(APIStatusError):
             await self.client.post(
                 "/v0/factcheck",
-                body=cast(object, dict(claim="claim")),
+                body=cast(object, dict(claim="claim", context="context")),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
             )
@@ -1488,6 +1488,6 @@ class TestAsyncBespokeLabs:
 
         respx_mock.post("/v0/factcheck").mock(side_effect=retry_handler)
 
-        response = await client.factcheck.with_raw_response.create(claim="claim")
+        response = await client.factcheck.with_raw_response.create(claim="claim", context="context")
 
         assert response.retries_taken == failures_before_success

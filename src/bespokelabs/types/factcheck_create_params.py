@@ -11,4 +11,4 @@ class FactcheckCreateParams(TypedDict, total=False):
     claim: Required[str]
     """The claim to be fact-checked."""
 
-    context: str
+    context: Required[str]

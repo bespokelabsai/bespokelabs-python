@@ -37,6 +37,7 @@ client = BespokeLabs(
 
 factcheck_create_response = client.factcheck.create(
     claim="claim",
+    context="context",
 )
 print(factcheck_create_response.support_prob)
 ```
@@ -64,6 +65,7 @@ client = AsyncBespokeLabs(
 async def main() -> None:
     factcheck_create_response = await client.factcheck.create(
         claim="claim",
+        context="context",
     )
     print(factcheck_create_response.support_prob)
 
@@ -100,6 +102,7 @@ client = BespokeLabs()
 try:
     client.factcheck.create(
         claim="claim",
+        context="context",
     )
 except bespokelabs.APIConnectionError as e:
     print("The server could not be reached")
@@ -145,6 +148,7 @@ client = BespokeLabs(
 # Or, configure per-request:
 client.with_options(max_retries=5).factcheck.create(
     claim="claim",
+    context="context",
 )
 ```
 
@@ -170,6 +174,7 @@ client = BespokeLabs(
 # Override per-request:
 client.with_options(timeout=5.0).factcheck.create(
     claim="claim",
+    context="context",
 )
 ```
 
@@ -211,6 +216,7 @@ from bespokelabs import BespokeLabs
 client = BespokeLabs()
 response = client.factcheck.with_raw_response.create(
     claim="claim",
+    context="context",
 )
 print(response.headers.get('X-My-Header'))
 
@@ -231,6 +237,7 @@ To stream the response body, use `.with_streaming_response` instead, which requi
 ```python
 with client.factcheck.with_streaming_response.create(
     claim="claim",
+    context="context",
 ) as response:
     print(response.headers.get("X-My-Header"))
 
