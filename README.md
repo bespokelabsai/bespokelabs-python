@@ -40,6 +40,11 @@ factcheck_create_response = client.argus.factcheck.create(
 print(factcheck_create_response.support_prob)
 ```
 
+While you can provide a `auth_token` keyword argument,
+we recommend using [python-dotenv](https://pypi.org/project/python-dotenv/)
+to add `BESPOKE_API_KEY="My Auth Token"` to your `.env` file
+so that your Auth Token is not stored in source control.
+
 ## Async usage
 
 Simply import `AsyncBespokelabs` instead of `Bespokelabs` and use `await` with each API call:
