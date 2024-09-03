@@ -5,7 +5,7 @@ description = "The official Python library for the bespokelabs API"
 dynamic = ["readme"]
 license = "Apache-2.0"
 authors = [
-{ name = "Bespokelabs", email = "dev-feedback@bespokelabs.com" },
+{ name = "Bespokelabs", email = "company@bespokelabs.ai" },
 ]
 dependencies = [
     "httpx>=0.23.0, <1",
