@@ -7,9 +7,9 @@ from typing import Any, cast
 
 import pytest
 
-from bespokelabs import Bespokelabs, AsyncBespokelabs
+from bespokelabs import BespokeLabs, AsyncBespokeLabs
 from tests.utils import assert_matches_type
-from bespokelabs.types.argus import FactcheckCreateResponse
+from bespokelabs.types import FactcheckCreateResponse
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
@@ -18,23 +18,23 @@ class TestFactcheck:
     parametrize = pytest.mark.parametrize("client", [False, True], indirect=True, ids=["loose", "strict"])
 
     @parametrize
-    def test_method_create(self, client: Bespokelabs) -> None:
-        factcheck = client.argus.factcheck.create(
+    def test_method_create(self, client: BespokeLabs) -> None:
+        factcheck = client.factcheck.create(
             claim="claim",
         )
         assert_matches_type(FactcheckCreateResponse, factcheck, path=["response"])
 
     @parametrize
-    def test_method_create_with_all_params(self, client: Bespokelabs) -> None:
-        factcheck = client.argus.factcheck.create(
+    def test_method_create_with_all_params(self, client: BespokeLabs) -> None:
+        factcheck = client.factcheck.create(
             claim="claim",
             context="context",
         )
         assert_matches_type(FactcheckCreateResponse, factcheck, path=["response"])
 
     @parametrize
-    def test_raw_response_create(self, client: Bespokelabs) -> None:
-        response = client.argus.factcheck.with_raw_response.create(
+    def test_raw_response_create(self, client: BespokeLabs) -> None:
+        response = client.factcheck.with_raw_response.create(
             claim="claim",
         )
 
@@ -44,8 +44,8 @@ class TestFactcheck:
         assert_matches_type(FactcheckCreateResponse, factcheck, path=["response"])
 
     @parametrize
-    def test_streaming_response_create(self, client: Bespokelabs) -> None:
-        with client.argus.factcheck.with_streaming_response.create(
+    def test_streaming_response_create(self, client: BespokeLabs) -> None:
+        with client.factcheck.with_streaming_response.create(
             claim="claim",
         ) as response:
             assert not response.is_closed
@@ -61,23 +61,23 @@ class TestAsyncFactcheck:
     parametrize = pytest.mark.parametrize("async_client", [False, True], indirect=True, ids=["loose", "strict"])
 
     @parametrize
-    async def test_method_create(self, async_client: AsyncBespokelabs) -> None:
-        factcheck = await async_client.argus.factcheck.create(
+    async def test_method_create(self, async_client: AsyncBespokeLabs) -> None:
+        factcheck = await async_client.factcheck.create(
             claim="claim",
         )
         assert_matches_type(FactcheckCreateResponse, factcheck, path=["response"])
 
     @parametrize
-    async def test_method_create_with_all_params(self, async_client: AsyncBespokelabs) -> None:
-        factcheck = await async_client.argus.factcheck.create(
+    async def test_method_create_with_all_params(self, async_client: AsyncBespokeLabs) -> None:
+        factcheck = await async_client.factcheck.create(
             claim="claim",
             context="context",
         )
         assert_matches_type(FactcheckCreateResponse, factcheck, path=["response"])
 
     @parametrize
-    async def test_raw_response_create(self, async_client: AsyncBespokelabs) -> None:
-        response = await async_client.argus.factcheck.with_raw_response.create(
+    async def test_raw_response_create(self, async_client: AsyncBespokeLabs) -> None:
+        response = await async_client.factcheck.with_raw_response.create(
             claim="claim",
         )
 
@@ -87,8 +87,8 @@ class TestAsyncFactcheck:
         assert_matches_type(FactcheckCreateResponse, factcheck, path=["response"])
 
     @parametrize
-    async def test_streaming_response_create(self, async_client: AsyncBespokelabs) -> None:
-        async with async_client.argus.factcheck.with_streaming_response.create(
+    async def test_streaming_response_create(self, async_client: AsyncBespokeLabs) -> None:
+        async with async_client.factcheck.with_streaming_response.create(
             claim="claim",
         ) as response:
             assert not response.is_closed

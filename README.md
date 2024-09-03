@@ -1,8 +1,8 @@
-# Bespokelabs Python API library
+# Bespoke Labs Python API library
 
 [![PyPI version](https://img.shields.io/pypi/v/bespokelabs.svg)](https://pypi.org/project/bespokelabs/)
 
-The Bespokelabs Python library provides convenient access to the Bespokelabs REST API from any Python 3.7+
+The Bespoke Labs Python library provides convenient access to the Bespoke Labs REST API from any Python 3.7+
 application. The library includes type definitions for all request params and response fields,
 and offers both synchronous and asynchronous clients powered by [httpx](https://github.com/encode/httpx).
 
@@ -10,7 +10,7 @@ It is generated with [Stainless](https://www.stainlessapi.com/).
 
 ## Documentation
 
-The REST API documentation can be found on [docs.bespokelabs.com](https://docs.bespokelabs.com). The full API of this library can be found in [api.md](api.md).
+The REST API documentation can be found on [docs.bespokelabs.ai](https://docs.bespokelabs.ai/). The full API of this library can be found in [api.md](api.md).
 
 ## Installation
 
@@ -28,14 +28,14 @@ The full API of this library can be found in [api.md](api.md).
 
 ```python
 import os
-from bespokelabs import Bespokelabs
+from bespokelabs import BespokeLabs
 
-client = Bespokelabs(
+client = BespokeLabs(
     # This is the default and can be omitted
     auth_token=os.environ.get("BESPOKE_API_KEY"),
 )
 
-factcheck_create_response = client.argus.factcheck.create(
+factcheck_create_response = client.factcheck.create(
     claim="claim",
 )
 print(factcheck_create_response.support_prob)
@@ -48,21 +48,21 @@ so that your Auth Token is not stored in source control.
 
 ## Async usage
 
-Simply import `AsyncBespokelabs` instead of `Bespokelabs` and use `await` with each API call:
+Simply import `AsyncBespokeLabs` instead of `BespokeLabs` and use `await` with each API call:
 
 ```python
 import os
 import asyncio
-from bespokelabs import AsyncBespokelabs
+from bespokelabs import AsyncBespokeLabs
 
-client = AsyncBespokelabs(
+client = AsyncBespokeLabs(
     # This is the default and can be omitted
     auth_token=os.environ.get("BESPOKE_API_KEY"),
 )
 
 
 async def main() -> None:
-    factcheck_create_response = await client.argus.factcheck.create(
+    factcheck_create_response = await client.factcheck.create(
         claim="claim",
     )
     print(factcheck_create_response.support_prob)
@@ -93,12 +93,12 @@ All errors inherit from `bespokelabs.APIError`.
 
 ```python
 import bespokelabs
-from bespokelabs import Bespokelabs
+from bespokelabs import BespokeLabs
 
-client = Bespokelabs()
+client = BespokeLabs()
 
 try:
-    client.argus.factcheck.create(
+    client.factcheck.create(
         claim="claim",
     )
 except bespokelabs.APIConnectionError as e:
@@ -134,16 +134,16 @@ Connection errors (for example, due to a network connectivity problem), 408 Requ
 You can use the `max_retries` option to configure or disable retry settings:
 
 ```python
-from bespokelabs import Bespokelabs
+from bespokelabs import BespokeLabs
 
 # Configure the default for all requests:
-client = Bespokelabs(
+client = BespokeLabs(
     # default is 2
     max_retries=0,
 )
 
 # Or, configure per-request:
-client.with_options(max_retries=5).argus.factcheck.create(
+client.with_options(max_retries=5).factcheck.create(
     claim="claim",
 )
 ```
@@ -154,21 +154,21 @@ By default requests time out after 1 minute. You can configure this with a `time
 which accepts a float or an [`httpx.Timeout`](https://www.python-httpx.org/advanced/#fine-tuning-the-configuration) object:
 
 ```python
-from bespokelabs import Bespokelabs
+from bespokelabs import BespokeLabs
 
 # Configure the default for all requests:
-client = Bespokelabs(
+client = BespokeLabs(
     # 20 seconds (default is 1 minute)
     timeout=20.0,
 )
 
 # More granular control:
-client = Bespokelabs(
+client = BespokeLabs(
     timeout=httpx.Timeout(60.0, read=5.0, write=10.0, connect=2.0),
 )
 
 # Override per-request:
-client.with_options(timeout=5.0).argus.factcheck.create(
+client.with_options(timeout=5.0).factcheck.create(
     claim="claim",
 )
 ```
@@ -183,10 +183,10 @@ Note that requests that time out are [retried twice by default](#retries).
 
 We use the standard library [`logging`](https://docs.python.org/3/library/logging.html) module.
 
-You can enable logging by setting the environment variable `BESPOKELABS_LOG` to `debug`.
+You can enable logging by setting the environment variable `BESPOKE_LABS_LOG` to `debug`.
 
 ```shell
-$ export BESPOKELABS_LOG=debug
+$ export BESPOKE_LABS_LOG=debug
 ```
 
 ### How to tell whether `None` means `null` or missing
@@ -206,15 +206,15 @@ if response.my_field is None:
 The "raw" Response object can be accessed by prefixing `.with_raw_response.` to any HTTP method call, e.g.,
 
 ```py
-from bespokelabs import Bespokelabs
+from bespokelabs import BespokeLabs
 
-client = Bespokelabs()
-response = client.argus.factcheck.with_raw_response.create(
+client = BespokeLabs()
+response = client.factcheck.with_raw_response.create(
     claim="claim",
 )
 print(response.headers.get('X-My-Header'))
 
-factcheck = response.parse()  # get the object that `argus.factcheck.create()` would have returned
+factcheck = response.parse()  # get the object that `factcheck.create()` would have returned
 print(factcheck.support_prob)
 ```
 
@@ -229,7 +229,7 @@ The above interface eagerly reads the full response body when you make the reque
 To stream the response body, use `.with_streaming_response` instead, which requires a context manager and only reads the response body once you call `.read()`, `.text()`, `.json()`, `.iter_bytes()`, `.iter_text()`, `.iter_lines()` or `.parse()`. In the async client, these are async methods.
 
 ```python
-with client.argus.factcheck.with_streaming_response.create(
+with client.factcheck.with_streaming_response.create(
     claim="claim",
 ) as response:
     print(response.headers.get("X-My-Header"))
@@ -284,10 +284,10 @@ You can directly override the [httpx client](https://www.python-httpx.org/api/#c
 - Additional [advanced](https://www.python-httpx.org/advanced/clients/) functionality
 
 ```python
-from bespokelabs import Bespokelabs, DefaultHttpxClient
+from bespokelabs import BespokeLabs, DefaultHttpxClient
 
-client = Bespokelabs(
-    # Or use the `BESPOKELABS_BASE_URL` env var
+client = BespokeLabs(
+    # Or use the `BESPOKE_LABS_BASE_URL` env var
     base_url="http://my.test.server.example.com:8083",
     http_client=DefaultHttpxClient(
         proxies="http://my.test.proxy.example.com",

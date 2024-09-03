@@ -6,7 +6,7 @@ import httpx
 import pytest
 import pydantic
 
-from bespokelabs import BaseModel, Bespokelabs, AsyncBespokelabs
+from bespokelabs import BaseModel, BespokeLabs, AsyncBespokeLabs
 from bespokelabs._response import (
     APIResponse,
     BaseAPIResponse,
@@ -56,7 +56,7 @@ def test_extract_response_type_binary_response() -> None:
 class PydanticModel(pydantic.BaseModel): ...
 
 
-def test_response_parse_mismatched_basemodel(client: Bespokelabs) -> None:
+def test_response_parse_mismatched_basemodel(client: BespokeLabs) -> None:
     response = APIResponse(
         raw=httpx.Response(200, content=b"foo"),
         client=client,
@@ -74,7 +74,7 @@ def test_response_parse_mismatched_basemodel(client: Bespokelabs) -> None:
 
 
 @pytest.mark.asyncio
-async def test_async_response_parse_mismatched_basemodel(async_client: AsyncBespokelabs) -> None:
+async def test_async_response_parse_mismatched_basemodel(async_client: AsyncBespokeLabs) -> None:
     response = AsyncAPIResponse(
         raw=httpx.Response(200, content=b"foo"),
         client=async_client,
@@ -91,7 +91,7 @@ async def test_async_response_parse_mismatched_basemodel(async_client: AsyncBesp
         await response.parse(to=PydanticModel)
 
 
-def test_response_parse_custom_stream(client: Bespokelabs) -> None:
+def test_response_parse_custom_stream(client: BespokeLabs) -> None:
     response = APIResponse(
         raw=httpx.Response(200, content=b"foo"),
         client=client,
@@ -106,7 +106,7 @@ def test_response_parse_custom_stream(client: Bespokelabs) -> None:
 
 
 @pytest.mark.asyncio
-async def test_async_response_parse_custom_stream(async_client: AsyncBespokelabs) -> None:
+async def test_async_response_parse_custom_stream(async_client: AsyncBespokeLabs) -> None:
     response = AsyncAPIResponse(
         raw=httpx.Response(200, content=b"foo"),
         client=async_client,
@@ -125,7 +125,7 @@ class CustomModel(BaseModel):
     bar: int
 
 
-def test_response_parse_custom_model(client: Bespokelabs) -> None:
+def test_response_parse_custom_model(client: BespokeLabs) -> None:
     response = APIResponse(
         raw=httpx.Response(200, content=json.dumps({"foo": "hello!", "bar": 2})),
         client=client,
@@ -141,7 +141,7 @@ def test_response_parse_custom_model(client: Bespokelabs) -> None:
 
 
 @pytest.mark.asyncio
-async def test_async_response_parse_custom_model(async_client: AsyncBespokelabs) -> None:
+async def test_async_response_parse_custom_model(async_client: AsyncBespokeLabs) -> None:
     response = AsyncAPIResponse(
         raw=httpx.Response(200, content=json.dumps({"foo": "hello!", "bar": 2})),
         client=async_client,
@@ -156,7 +156,7 @@ async def test_async_response_parse_custom_model(async_client: AsyncBespokelabs)
     assert obj.bar == 2
 
 
-def test_response_parse_annotated_type(client: Bespokelabs) -> None:
+def test_response_parse_annotated_type(client: BespokeLabs) -> None:
     response = APIResponse(
         raw=httpx.Response(200, content=json.dumps({"foo": "hello!", "bar": 2})),
         client=client,
@@ -173,7 +173,7 @@ def test_response_parse_annotated_type(client: Bespokelabs) -> None:
     assert obj.bar == 2
 
 
-async def test_async_response_parse_annotated_type(async_client: AsyncBespokelabs) -> None:
+async def test_async_response_parse_annotated_type(async_client: AsyncBespokeLabs) -> None:
     response = AsyncAPIResponse(
         raw=httpx.Response(200, content=json.dumps({"foo": "hello!", "bar": 2})),
         client=async_client,
@@ -195,7 +195,7 @@ class OtherModel(BaseModel):
 
 
 @pytest.mark.parametrize("client", [False], indirect=True)  # loose validation
-def test_response_parse_expect_model_union_non_json_content(client: Bespokelabs) -> None:
+def test_response_parse_expect_model_union_non_json_content(client: BespokeLabs) -> None:
     response = APIResponse(
         raw=httpx.Response(200, content=b"foo", headers={"Content-Type": "application/text"}),
         client=client,
@@ -212,7 +212,7 @@ def test_response_parse_expect_model_union_non_json_content(client: Bespokelabs)
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("async_client", [False], indirect=True)  # loose validation
-async def test_async_response_parse_expect_model_union_non_json_content(async_client: AsyncBespokelabs) -> None:
+async def test_async_response_parse_expect_model_union_non_json_content(async_client: AsyncBespokeLabs) -> None:
     response = AsyncAPIResponse(
         raw=httpx.Response(200, content=b"foo", headers={"Content-Type": "application/text"}),
         client=async_client,

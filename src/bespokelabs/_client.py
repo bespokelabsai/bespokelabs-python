@@ -25,7 +25,7 @@ from ._utils import (
 )
 from ._version import __version__
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
-from ._exceptions import APIStatusError, BespokelabsError
+from ._exceptions import APIStatusError, BespokeLabsError
 from ._base_client import (
     DEFAULT_MAX_RETRIES,
     SyncAPIClient,
@@ -38,17 +38,17 @@ __all__ = [
     "ProxiesTypes",
     "RequestOptions",
     "resources",
-    "Bespokelabs",
-    "AsyncBespokelabs",
+    "BespokeLabs",
+    "AsyncBespokeLabs",
     "Client",
     "AsyncClient",
 ]
 
 
-class Bespokelabs(SyncAPIClient):
-    argus: resources.ArgusResource
-    with_raw_response: BespokelabsWithRawResponse
-    with_streaming_response: BespokelabsWithStreamedResponse
+class BespokeLabs(SyncAPIClient):
+    factcheck: resources.FactcheckResource
+    with_raw_response: BespokeLabsWithRawResponse
+    with_streaming_response: BespokeLabsWithStreamedResponse
 
     # client options
     auth_token: str
@@ -76,20 +76,20 @@ class Bespokelabs(SyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new synchronous bespokelabs client instance.
+        """Construct a new synchronous bespoke_labs client instance.
 
         This automatically infers the `auth_token` argument from the `BESPOKE_API_KEY` environment variable if it is not provided.
         """
         if auth_token is None:
             auth_token = os.environ.get("BESPOKE_API_KEY")
         if auth_token is None:
-            raise BespokelabsError(
+            raise BespokeLabsError(
                 "The auth_token client option must be set either by passing auth_token to the client or by setting the BESPOKE_API_KEY environment variable"
             )
         self.auth_token = auth_token
 
         if base_url is None:
-            base_url = os.environ.get("BESPOKELABS_BASE_URL")
+            base_url = os.environ.get("BESPOKE_LABS_BASE_URL")
         if base_url is None:
             base_url = f"https://api.bespokelabs.ai"
 
@@ -104,9 +104,9 @@ class Bespokelabs(SyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
-        self.argus = resources.ArgusResource(self)
-        self.with_raw_response = BespokelabsWithRawResponse(self)
-        self.with_streaming_response = BespokelabsWithStreamedResponse(self)
+        self.factcheck = resources.FactcheckResource(self)
+        self.with_raw_response = BespokeLabsWithRawResponse(self)
+        self.with_streaming_response = BespokeLabsWithStreamedResponse(self)
 
     @property
     @override
@@ -213,10 +213,10 @@ class Bespokelabs(SyncAPIClient):
         return APIStatusError(err_msg, response=response, body=body)
 
 
-class AsyncBespokelabs(AsyncAPIClient):
-    argus: resources.AsyncArgusResource
-    with_raw_response: AsyncBespokelabsWithRawResponse
-    with_streaming_response: AsyncBespokelabsWithStreamedResponse
+class AsyncBespokeLabs(AsyncAPIClient):
+    factcheck: resources.AsyncFactcheckResource
+    with_raw_response: AsyncBespokeLabsWithRawResponse
+    with_streaming_response: AsyncBespokeLabsWithStreamedResponse
 
     # client options
     auth_token: str
@@ -244,20 +244,20 @@ class AsyncBespokelabs(AsyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new async bespokelabs client instance.
+        """Construct a new async bespoke_labs client instance.
 
         This automatically infers the `auth_token` argument from the `BESPOKE_API_KEY` environment variable if it is not provided.
         """
         if auth_token is None:
             auth_token = os.environ.get("BESPOKE_API_KEY")
         if auth_token is None:
-            raise BespokelabsError(
+            raise BespokeLabsError(
                 "The auth_token client option must be set either by passing auth_token to the client or by setting the BESPOKE_API_KEY environment variable"
             )
         self.auth_token = auth_token
 
         if base_url is None:
-            base_url = os.environ.get("BESPOKELABS_BASE_URL")
+            base_url = os.environ.get("BESPOKE_LABS_BASE_URL")
         if base_url is None:
             base_url = f"https://api.bespokelabs.ai"
 
@@ -272,9 +272,9 @@ class AsyncBespokelabs(AsyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
-        self.argus = resources.AsyncArgusResource(self)
-        self.with_raw_response = AsyncBespokelabsWithRawResponse(self)
-        self.with_streaming_response = AsyncBespokelabsWithStreamedResponse(self)
+        self.factcheck = resources.AsyncFactcheckResource(self)
+        self.with_raw_response = AsyncBespokeLabsWithRawResponse(self)
+        self.with_streaming_response = AsyncBespokeLabsWithStreamedResponse(self)
 
     @property
     @override
@@ -381,26 +381,26 @@ class AsyncBespokelabs(AsyncAPIClient):
         return APIStatusError(err_msg, response=response, body=body)
 
 
-class BespokelabsWithRawResponse:
-    def __init__(self, client: Bespokelabs) -> None:
-        self.argus = resources.ArgusResourceWithRawResponse(client.argus)
+class BespokeLabsWithRawResponse:
+    def __init__(self, client: BespokeLabs) -> None:
+        self.factcheck = resources.FactcheckResourceWithRawResponse(client.factcheck)
 
 
-class AsyncBespokelabsWithRawResponse:
-    def __init__(self, client: AsyncBespokelabs) -> None:
-        self.argus = resources.AsyncArgusResourceWithRawResponse(client.argus)
+class AsyncBespokeLabsWithRawResponse:
+    def __init__(self, client: AsyncBespokeLabs) -> None:
+        self.factcheck = resources.AsyncFactcheckResourceWithRawResponse(client.factcheck)
 
 
-class BespokelabsWithStreamedResponse:
-    def __init__(self, client: Bespokelabs) -> None:
-        self.argus = resources.ArgusResourceWithStreamingResponse(client.argus)
+class BespokeLabsWithStreamedResponse:
+    def __init__(self, client: BespokeLabs) -> None:
+        self.factcheck = resources.FactcheckResourceWithStreamingResponse(client.factcheck)
 
 
-class AsyncBespokelabsWithStreamedResponse:
-    def __init__(self, client: AsyncBespokelabs) -> None:
-        self.argus = resources.AsyncArgusResourceWithStreamingResponse(client.argus)
+class AsyncBespokeLabsWithStreamedResponse:
+    def __init__(self, client: AsyncBespokeLabs) -> None:
+        self.factcheck = resources.AsyncFactcheckResourceWithStreamingResponse(client.factcheck)
 
 
-Client = Bespokelabs
+Client = BespokeLabs
 
-AsyncClient = AsyncBespokelabs
+AsyncClient = AsyncBespokeLabs
