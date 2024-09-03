@@ -25,7 +25,7 @@ from ._utils import (
 )
 from ._version import __version__
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
-from ._exceptions import APIStatusError
+from ._exceptions import APIStatusError, BespokelabsError
 from ._base_client import (
     DEFAULT_MAX_RETRIES,
     SyncAPIClient,
@@ -57,12 +57,14 @@ class Bespokelabs(SyncAPIClient):
     with_streaming_response: BespokelabsWithStreamedResponse
 
     # client options
+    auth_token: str
 
     _environment: Literal["production", "environment_1"] | NotGiven
 
     def __init__(
         self,
         *,
+        auth_token: str | None = None,
         environment: Literal["production", "environment_1"] | NotGiven = NOT_GIVEN,
         base_url: str | httpx.URL | None | NotGiven = NOT_GIVEN,
         timeout: Union[float, Timeout, None, NotGiven] = NOT_GIVEN,
@@ -83,7 +85,18 @@ class Bespokelabs(SyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new synchronous bespokelabs client instance."""
+        """Construct a new synchronous bespokelabs client instance.
+
+        This automatically infers the `auth_token` argument from the `BESPOKE_API_KEY` environment variable if it is not provided.
+        """
+        if auth_token is None:
+            auth_token = os.environ.get("BESPOKE_API_KEY")
+        if auth_token is None:
+            raise BespokelabsError(
+                "The auth_token client option must be set either by passing auth_token to the client or by setting the BESPOKE_API_KEY environment variable"
+            )
+        self.auth_token = auth_token
+
         self._environment = environment
 
         base_url_env = os.environ.get("BESPOKELABS_BASE_URL")
@@ -132,6 +145,12 @@ class Bespokelabs(SyncAPIClient):
 
     @property
     @override
+    def auth_headers(self) -> dict[str, str]:
+        auth_token = self.auth_token
+        return {"api_key": auth_token}
+
+    @property
+    @override
     def default_headers(self) -> dict[str, str | Omit]:
         return {
             **super().default_headers,
@@ -142,6 +161,7 @@ class Bespokelabs(SyncAPIClient):
     def copy(
         self,
         *,
+        auth_token: str | None = None,
         environment: Literal["production", "environment_1"] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = NOT_GIVEN,
@@ -176,6 +196,7 @@ class Bespokelabs(SyncAPIClient):
 
         http_client = http_client or self._client
         return self.__class__(
+            auth_token=auth_token or self.auth_token,
             base_url=base_url or self.base_url,
             environment=environment or self._environment,
             timeout=self.timeout if isinstance(timeout, NotGiven) else timeout,
@@ -230,12 +251,14 @@ class AsyncBespokelabs(AsyncAPIClient):
     with_streaming_response: AsyncBespokelabsWithStreamedResponse
 
     # client options
+    auth_token: str
 
     _environment: Literal["production", "environment_1"] | NotGiven
 
     def __init__(
         self,
         *,
+        auth_token: str | None = None,
         environment: Literal["production", "environment_1"] | NotGiven = NOT_GIVEN,
         base_url: str | httpx.URL | None | NotGiven = NOT_GIVEN,
         timeout: Union[float, Timeout, None, NotGiven] = NOT_GIVEN,
@@ -256,7 +279,18 @@ class AsyncBespokelabs(AsyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new async bespokelabs client instance."""
+        """Construct a new async bespokelabs client instance.
+
+        This automatically infers the `auth_token` argument from the `BESPOKE_API_KEY` environment variable if it is not provided.
+        """
+        if auth_token is None:
+            auth_token = os.environ.get("BESPOKE_API_KEY")
+        if auth_token is None:
+            raise BespokelabsError(
+                "The auth_token client option must be set either by passing auth_token to the client or by setting the BESPOKE_API_KEY environment variable"
+            )
+        self.auth_token = auth_token
+
         self._environment = environment
 
         base_url_env = os.environ.get("BESPOKELABS_BASE_URL")
@@ -305,6 +339,12 @@ class AsyncBespokelabs(AsyncAPIClient):
 
     @property
     @override
+    def auth_headers(self) -> dict[str, str]:
+        auth_token = self.auth_token
+        return {"api_key": auth_token}
+
+    @property
+    @override
     def default_headers(self) -> dict[str, str | Omit]:
         return {
             **super().default_headers,
@@ -315,6 +355,7 @@ class AsyncBespokelabs(AsyncAPIClient):
     def copy(
         self,
         *,
+        auth_token: str | None = None,
         environment: Literal["production", "environment_1"] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = NOT_GIVEN,
@@ -349,6 +390,7 @@ class AsyncBespokelabs(AsyncAPIClient):
 
         http_client = http_client or self._client
         return self.__class__(
+            auth_token=auth_token or self.auth_token,
             base_url=base_url or self.base_url,
             environment=environment or self._environment,
             timeout=self.timeout if isinstance(timeout, NotGiven) else timeout,
