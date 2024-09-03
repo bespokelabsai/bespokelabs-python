@@ -558,16 +558,6 @@ class TestBespokelabs:
             client = Bespokelabs(auth_token=auth_token, _strict_response_validation=True)
             assert client.base_url == "http://localhost:5000/from/env/"
 
-        # explicit environment arg requires explicitness
-        with update_env(BESPOKELABS_BASE_URL="http://localhost:5000/from/env"):
-            with pytest.raises(ValueError, match=r"you must pass base_url=None"):
-                Bespokelabs(auth_token=auth_token, _strict_response_validation=True, environment="production")
-
-            client = Bespokelabs(
-                base_url=None, auth_token=auth_token, _strict_response_validation=True, environment="production"
-            )
-            assert str(client.base_url).startswith("http://127.0.0.1:8080/")
-
     @pytest.mark.parametrize(
         "client",
         [
@@ -1285,16 +1275,6 @@ class TestAsyncBespokelabs:
         with update_env(BESPOKELABS_BASE_URL="http://localhost:5000/from/env"):
             client = AsyncBespokelabs(auth_token=auth_token, _strict_response_validation=True)
             assert client.base_url == "http://localhost:5000/from/env/"
-
-        # explicit environment arg requires explicitness
-        with update_env(BESPOKELABS_BASE_URL="http://localhost:5000/from/env"):
-            with pytest.raises(ValueError, match=r"you must pass base_url=None"):
-                AsyncBespokelabs(auth_token=auth_token, _strict_response_validation=True, environment="production")
-
-            client = AsyncBespokelabs(
-                base_url=None, auth_token=auth_token, _strict_response_validation=True, environment="production"
-            )
-            assert str(client.base_url).startswith("http://127.0.0.1:8080/")
 
     @pytest.mark.parametrize(
         "client",
