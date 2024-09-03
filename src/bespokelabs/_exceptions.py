@@ -18,11 +18,11 @@ __all__ = [
 ]
 
 
-class BespokelabsError(Exception):
+class BespokeLabsError(Exception):
     pass
 
 
-class APIError(BespokelabsError):
+class APIError(BespokeLabsError):
     message: str
     request: httpx.Request
 

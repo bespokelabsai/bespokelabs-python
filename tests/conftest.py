@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Iterator, AsyncIterator
 
 import pytest
 
-from bespokelabs import Bespokelabs, AsyncBespokelabs
+from bespokelabs import BespokeLabs, AsyncBespokeLabs
 
 if TYPE_CHECKING:
     from _pytest.fixtures import FixtureRequest
@@ -30,20 +30,20 @@ auth_token = "My Auth Token"
 
 
 @pytest.fixture(scope="session")
-def client(request: FixtureRequest) -> Iterator[Bespokelabs]:
+def client(request: FixtureRequest) -> Iterator[BespokeLabs]:
     strict = getattr(request, "param", True)
     if not isinstance(strict, bool):
         raise TypeError(f"Unexpected fixture parameter type {type(strict)}, expected {bool}")
 
-    with Bespokelabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=strict) as client:
+    with BespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=strict) as client:
         yield client
 
 
 @pytest.fixture(scope="session")
-async def async_client(request: FixtureRequest) -> AsyncIterator[AsyncBespokelabs]:
+async def async_client(request: FixtureRequest) -> AsyncIterator[AsyncBespokeLabs]:
     strict = getattr(request, "param", True)
     if not isinstance(strict, bool):
         raise TypeError(f"Unexpected fixture parameter type {type(strict)}, expected {bool}")
 
-    async with AsyncBespokelabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=strict) as client:
+    async with AsyncBespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=strict) as client:
         yield client

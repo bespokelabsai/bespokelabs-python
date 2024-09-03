@@ -1,11 +1,11 @@
 [project]
 name = "bespokelabs"
 version = "0.0.1-alpha.0"
-description = "The official Python library for the bespokelabs API"
+description = "The official Python library for the bespoke_labs API"
 dynamic = ["readme"]
 license = "Apache-2.0"
 authors = [
-{ name = "Bespokelabs", email = "company@bespokelabs.ai" },
+{ name = "Bespoke Labs", email = "company@bespokelabs.ai" },
 ]
 dependencies = [
     "httpx>=0.23.0, <1",
