@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import List
 from typing_extensions import Required, TypedDict
 
 __all__ = ["FactcheckCreateParams"]
@@ -10,6 +9,6 @@ __all__ = ["FactcheckCreateParams"]
 
 class FactcheckCreateParams(TypedDict, total=False):
     claim: Required[str]
-    """The claim to be fact-checked"""
+    """The claim to be fact-checked."""
 
-    contexts: Required[List[str]]
+    context: str

@@ -36,9 +36,8 @@ client = Bespokelabs(
 
 factcheck_create_response = client.argus.factcheck.create(
     claim="claim",
-    contexts=["string", "string", "string"],
 )
-print(factcheck_create_response.claim_supported_by_contexts)
+print(factcheck_create_response.support_prob)
 ```
 
 ## Async usage
@@ -58,9 +57,8 @@ client = AsyncBespokelabs(
 async def main() -> None:
     factcheck_create_response = await client.argus.factcheck.create(
         claim="claim",
-        contexts=["string", "string", "string"],
     )
-    print(factcheck_create_response.claim_supported_by_contexts)
+    print(factcheck_create_response.support_prob)
 
 
 asyncio.run(main())
@@ -95,7 +93,6 @@ client = Bespokelabs()
 try:
     client.argus.factcheck.create(
         claim="claim",
-        contexts=["string", "string", "string"],
     )
 except bespokelabs.APIConnectionError as e:
     print("The server could not be reached")
@@ -141,7 +138,6 @@ client = Bespokelabs(
 # Or, configure per-request:
 client.with_options(max_retries=5).argus.factcheck.create(
     claim="claim",
-    contexts=["string", "string", "string"],
 )
 ```
 
@@ -167,7 +163,6 @@ client = Bespokelabs(
 # Override per-request:
 client.with_options(timeout=5.0).argus.factcheck.create(
     claim="claim",
-    contexts=["string", "string", "string"],
 )
 ```
 
@@ -209,12 +204,11 @@ from bespokelabs import Bespokelabs
 client = Bespokelabs()
 response = client.argus.factcheck.with_raw_response.create(
     claim="claim",
-    contexts=["string", "string", "string"],
 )
 print(response.headers.get('X-My-Header'))
 
 factcheck = response.parse()  # get the object that `argus.factcheck.create()` would have returned
-print(factcheck.claim_supported_by_contexts)
+print(factcheck.support_prob)
 ```
 
 These methods return an [`APIResponse`](https://github.com/stainless-sdks/bespokelabs-python/tree/main/src/bespokelabs/_response.py) object.
@@ -230,7 +224,6 @@ To stream the response body, use `.with_streaming_response` instead, which requi
 ```python
 with client.argus.factcheck.with_streaming_response.create(
     claim="claim",
-    contexts=["string", "string", "string"],
 ) as response:
     print(response.headers.get("X-My-Header"))
 
