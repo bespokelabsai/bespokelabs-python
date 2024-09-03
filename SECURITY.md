@@ -20,7 +20,7 @@ or products provided by Bespokelabs please follow the respective company's secur
 
 ### Bespokelabs Terms and Policies
 
-Please contact dev-feedback@bespokelabs.com for any questions or concerns regarding security of our services.
+Please contact company@bespokelabs.ai for any questions or concerns regarding security of our services.
 
 ---
 
