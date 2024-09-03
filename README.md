@@ -33,8 +33,6 @@ from bespokelabs import Bespokelabs
 client = Bespokelabs(
     # This is the default and can be omitted
     auth_token=os.environ.get("BESPOKE_API_KEY"),
-    # defaults to "production".
-    environment="environment_1",
 )
 
 factcheck_create_response = client.argus.factcheck.create(
@@ -60,8 +58,6 @@ from bespokelabs import AsyncBespokelabs
 client = AsyncBespokelabs(
     # This is the default and can be omitted
     auth_token=os.environ.get("BESPOKE_API_KEY"),
-    # defaults to "production".
-    environment="environment_1",
 )
 
 
