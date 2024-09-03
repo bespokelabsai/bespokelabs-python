@@ -17,9 +17,10 @@ from respx import MockRouter
 from pydantic import ValidationError
 
 from bespokelabs import Bespokelabs, AsyncBespokelabs, APIResponseValidationError
+from bespokelabs._types import Omit
 from bespokelabs._models import BaseModel, FinalRequestOptions
 from bespokelabs._constants import RAW_RESPONSE_HEADER
-from bespokelabs._exceptions import APIStatusError, APITimeoutError, APIResponseValidationError
+from bespokelabs._exceptions import APIStatusError, APITimeoutError, BespokelabsError, APIResponseValidationError
 from bespokelabs._base_client import (
     DEFAULT_TIMEOUT,
     HTTPX_DEFAULT_TIMEOUT,
@@ -327,6 +328,16 @@ class TestBespokelabs:
         request = client2._build_request(FinalRequestOptions(method="get", url="/foo"))
         assert request.headers.get("x-foo") == "stainless"
         assert request.headers.get("x-stainless-lang") == "my-overriding-header"
+
+    def test_validate_headers(self) -> None:
+        client = Bespokelabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=True)
+        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
+        assert request.headers.get("api_key") == auth_token
+
+        with pytest.raises(BespokelabsError):
+            with update_env(**{"BESPOKE_API_KEY": Omit()}):
+                client2 = Bespokelabs(base_url=base_url, auth_token=None, _strict_response_validation=True)
+            _ = client2
 
     def test_default_query_option(self) -> None:
         client = Bespokelabs(
@@ -1045,6 +1056,16 @@ class TestAsyncBespokelabs:
         request = client2._build_request(FinalRequestOptions(method="get", url="/foo"))
         assert request.headers.get("x-foo") == "stainless"
         assert request.headers.get("x-stainless-lang") == "my-overriding-header"
+
+    def test_validate_headers(self) -> None:
+        client = AsyncBespokelabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=True)
+        request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
+        assert request.headers.get("api_key") == auth_token
+
+        with pytest.raises(BespokelabsError):
+            with update_env(**{"BESPOKE_API_KEY": Omit()}):
+                client2 = AsyncBespokelabs(base_url=base_url, auth_token=None, _strict_response_validation=True)
+            _ = client2
 
     def test_default_query_option(self) -> None:
         client = AsyncBespokelabs(

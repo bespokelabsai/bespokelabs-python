@@ -27,9 +27,12 @@ pip install git+ssh://git@github.com/stainless-sdks/bespokelabs-python.git
 The full API of this library can be found in [api.md](api.md).
 
 ```python
+import os
 from bespokelabs import Bespokelabs
 
 client = Bespokelabs(
+    # This is the default and can be omitted
+    auth_token=os.environ.get("BESPOKE_API_KEY"),
     # defaults to "production".
     environment="environment_1",
 )
@@ -50,10 +53,13 @@ so that your Auth Token is not stored in source control.
 Simply import `AsyncBespokelabs` instead of `Bespokelabs` and use `await` with each API call:
 
 ```python
+import os
 import asyncio
 from bespokelabs import AsyncBespokelabs
 
 client = AsyncBespokelabs(
+    # This is the default and can be omitted
+    auth_token=os.environ.get("BESPOKE_API_KEY"),
     # defaults to "production".
     environment="environment_1",
 )
