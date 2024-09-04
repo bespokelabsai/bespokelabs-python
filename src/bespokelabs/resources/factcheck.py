@@ -51,6 +51,8 @@ class FactcheckResource(SyncAPIResource):
         Args:
           claim: The claim to be fact-checked.
 
+          context: The context to fact-check against.
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -101,6 +103,8 @@ class AsyncFactcheckResource(AsyncAPIResource):
 
         Args:
           claim: The claim to be fact-checked.
+
+          context: The context to fact-check against.
 
           extra_headers: Send extra headers
 
