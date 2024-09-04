@@ -16,7 +16,7 @@ The REST API documentation can be found on [docs.bespokelabs.ai](https://docs.be
 
 ```sh
 # install from PyPI
-pip install --pre bespokelabs
+pip install bespokelabs
 ```
 
 ## Usage
