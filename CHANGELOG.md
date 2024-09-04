@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0 (2024-09-04)
+
+Full Changelog: [v0.1.0-alpha.1...v0.1.0](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.1.0-alpha.1...v0.1.0)
+
+### Features
+
+* **api:** update via SDK Studio ([#4](https://github.com/bespokelabsai/bespokelabs-python/issues/4)) ([88ab107](https://github.com/bespokelabsai/bespokelabs-python/commit/88ab107c0b748171107610ca7996a7e7cd34cfc2))
+
 ## 0.1.0-alpha.1 (2024-09-04)
 
 Full Changelog: [v0.0.1-alpha.0...v0.1.0-alpha.1](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.0.1-alpha.0...v0.1.0-alpha.1)
