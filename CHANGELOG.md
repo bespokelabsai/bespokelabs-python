@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.1 (2024-09-05)
+
+Full Changelog: [v0.1.0...v0.1.1](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.1.0...v0.1.1)
+
+### Features
+
+* **api:** update via SDK Studio ([#7](https://github.com/bespokelabsai/bespokelabs-python/issues/7)) ([052e2ed](https://github.com/bespokelabsai/bespokelabs-python/commit/052e2ede8c634b31dc4075d57b88bfc7fdb9cb59))
+
+
+### Chores
+
+* pyproject.toml formatting changes ([#9](https://github.com/bespokelabsai/bespokelabs-python/issues/9)) ([0f5c6e8](https://github.com/bespokelabsai/bespokelabs-python/commit/0f5c6e84656c6b48640ffb4bbb47780e94a9ed4a))
+
 ## 0.1.0 (2024-09-04)
 
 Full Changelog: [v0.1.0-alpha.1...v0.1.0](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.1.0-alpha.1...v0.1.0)
