@@ -46,7 +46,7 @@ __all__ = [
 
 
 class BespokeLabs(SyncAPIClient):
-    factcheck: resources.FactcheckResource
+    minicheck: resources.MinicheckResource
     with_raw_response: BespokeLabsWithRawResponse
     with_streaming_response: BespokeLabsWithStreamedResponse
 
@@ -104,7 +104,7 @@ class BespokeLabs(SyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
-        self.factcheck = resources.FactcheckResource(self)
+        self.minicheck = resources.MinicheckResource(self)
         self.with_raw_response = BespokeLabsWithRawResponse(self)
         self.with_streaming_response = BespokeLabsWithStreamedResponse(self)
 
@@ -214,7 +214,7 @@ class BespokeLabs(SyncAPIClient):
 
 
 class AsyncBespokeLabs(AsyncAPIClient):
-    factcheck: resources.AsyncFactcheckResource
+    minicheck: resources.AsyncMinicheckResource
     with_raw_response: AsyncBespokeLabsWithRawResponse
     with_streaming_response: AsyncBespokeLabsWithStreamedResponse
 
@@ -272,7 +272,7 @@ class AsyncBespokeLabs(AsyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
-        self.factcheck = resources.AsyncFactcheckResource(self)
+        self.minicheck = resources.AsyncMinicheckResource(self)
         self.with_raw_response = AsyncBespokeLabsWithRawResponse(self)
         self.with_streaming_response = AsyncBespokeLabsWithStreamedResponse(self)
 
@@ -383,22 +383,22 @@ class AsyncBespokeLabs(AsyncAPIClient):
 
 class BespokeLabsWithRawResponse:
     def __init__(self, client: BespokeLabs) -> None:
-        self.factcheck = resources.FactcheckResourceWithRawResponse(client.factcheck)
+        self.minicheck = resources.MinicheckResourceWithRawResponse(client.minicheck)
 
 
 class AsyncBespokeLabsWithRawResponse:
     def __init__(self, client: AsyncBespokeLabs) -> None:
-        self.factcheck = resources.AsyncFactcheckResourceWithRawResponse(client.factcheck)
+        self.minicheck = resources.AsyncMinicheckResourceWithRawResponse(client.minicheck)
 
 
 class BespokeLabsWithStreamedResponse:
     def __init__(self, client: BespokeLabs) -> None:
-        self.factcheck = resources.FactcheckResourceWithStreamingResponse(client.factcheck)
+        self.minicheck = resources.MinicheckResourceWithStreamingResponse(client.minicheck)
 
 
 class AsyncBespokeLabsWithStreamedResponse:
     def __init__(self, client: AsyncBespokeLabs) -> None:
-        self.factcheck = resources.AsyncFactcheckResourceWithStreamingResponse(client.factcheck)
+        self.minicheck = resources.AsyncMinicheckResourceWithStreamingResponse(client.minicheck)
 
 
 Client = BespokeLabs
