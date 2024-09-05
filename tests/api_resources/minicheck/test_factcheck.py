@@ -9,7 +9,7 @@ import pytest
 
 from bespokelabs import BespokeLabs, AsyncBespokeLabs
 from tests.utils import assert_matches_type
-from bespokelabs.types import FactcheckCreateResponse
+from bespokelabs.types.minicheck import FactcheckCreateResponse
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
@@ -19,7 +19,7 @@ class TestFactcheck:
 
     @parametrize
     def test_method_create(self, client: BespokeLabs) -> None:
-        factcheck = client.factcheck.create(
+        factcheck = client.minicheck.factcheck.create(
             claim="claim",
             context="context",
         )
@@ -27,7 +27,7 @@ class TestFactcheck:
 
     @parametrize
     def test_raw_response_create(self, client: BespokeLabs) -> None:
-        response = client.factcheck.with_raw_response.create(
+        response = client.minicheck.factcheck.with_raw_response.create(
             claim="claim",
             context="context",
         )
@@ -39,7 +39,7 @@ class TestFactcheck:
 
     @parametrize
     def test_streaming_response_create(self, client: BespokeLabs) -> None:
-        with client.factcheck.with_streaming_response.create(
+        with client.minicheck.factcheck.with_streaming_response.create(
             claim="claim",
             context="context",
         ) as response:
@@ -57,7 +57,7 @@ class TestAsyncFactcheck:
 
     @parametrize
     async def test_method_create(self, async_client: AsyncBespokeLabs) -> None:
-        factcheck = await async_client.factcheck.create(
+        factcheck = await async_client.minicheck.factcheck.create(
             claim="claim",
             context="context",
         )
@@ -65,7 +65,7 @@ class TestAsyncFactcheck:
 
     @parametrize
     async def test_raw_response_create(self, async_client: AsyncBespokeLabs) -> None:
-        response = await async_client.factcheck.with_raw_response.create(
+        response = await async_client.minicheck.factcheck.with_raw_response.create(
             claim="claim",
             context="context",
         )
@@ -77,7 +77,7 @@ class TestAsyncFactcheck:
 
     @parametrize
     async def test_streaming_response_create(self, async_client: AsyncBespokeLabs) -> None:
-        async with async_client.factcheck.with_streaming_response.create(
+        async with async_client.minicheck.factcheck.with_streaming_response.create(
             claim="claim",
             context="context",
         ) as response:
