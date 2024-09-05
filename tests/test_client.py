@@ -719,11 +719,11 @@ class TestBespokeLabs:
     @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     def test_retrying_timeout_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
-        respx_mock.post("/v0/factcheck").mock(side_effect=httpx.TimeoutException("Test timeout error"))
+        respx_mock.post("/v0/minicheck/factcheck").mock(side_effect=httpx.TimeoutException("Test timeout error"))
 
         with pytest.raises(APITimeoutError):
             self.client.post(
-                "/v0/factcheck",
+                "/v0/minicheck/factcheck",
                 body=cast(object, dict(claim="claim", context="context")),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
@@ -734,11 +734,11 @@ class TestBespokeLabs:
     @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
-        respx_mock.post("/v0/factcheck").mock(return_value=httpx.Response(500))
+        respx_mock.post("/v0/minicheck/factcheck").mock(return_value=httpx.Response(500))
 
         with pytest.raises(APIStatusError):
             self.client.post(
-                "/v0/factcheck",
+                "/v0/minicheck/factcheck",
                 body=cast(object, dict(claim="claim", context="context")),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
@@ -761,9 +761,9 @@ class TestBespokeLabs:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.post("/v0/factcheck").mock(side_effect=retry_handler)
+        respx_mock.post("/v0/minicheck/factcheck").mock(side_effect=retry_handler)
 
-        response = client.factcheck.with_raw_response.create(claim="claim", context="context")
+        response = client.minicheck.factcheck.with_raw_response.create(claim="claim", context="context")
 
         assert response.retries_taken == failures_before_success
 
@@ -1441,11 +1441,11 @@ class TestAsyncBespokeLabs:
     @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     async def test_retrying_timeout_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
-        respx_mock.post("/v0/factcheck").mock(side_effect=httpx.TimeoutException("Test timeout error"))
+        respx_mock.post("/v0/minicheck/factcheck").mock(side_effect=httpx.TimeoutException("Test timeout error"))
 
         with pytest.raises(APITimeoutError):
             await self.client.post(
-                "/v0/factcheck",
+                "/v0/minicheck/factcheck",
                 body=cast(object, dict(claim="claim", context="context")),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
@@ -1456,11 +1456,11 @@ class TestAsyncBespokeLabs:
     @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     async def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
-        respx_mock.post("/v0/factcheck").mock(return_value=httpx.Response(500))
+        respx_mock.post("/v0/minicheck/factcheck").mock(return_value=httpx.Response(500))
 
         with pytest.raises(APIStatusError):
             await self.client.post(
-                "/v0/factcheck",
+                "/v0/minicheck/factcheck",
                 body=cast(object, dict(claim="claim", context="context")),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
@@ -1486,8 +1486,8 @@ class TestAsyncBespokeLabs:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.post("/v0/factcheck").mock(side_effect=retry_handler)
+        respx_mock.post("/v0/minicheck/factcheck").mock(side_effect=retry_handler)
 
-        response = await client.factcheck.with_raw_response.create(claim="claim", context="context")
+        response = await client.minicheck.factcheck.with_raw_response.create(claim="claim", context="context")
 
         assert response.retries_taken == failures_before_success

@@ -32,7 +32,7 @@ client = BespokeLabs(
     auth_token=os.environ.get("BESPOKE_API_KEY"),
 )
 
-factcheck_create_response = client.factcheck.create(
+factcheck_create_response = client.minicheck.factcheck.create(
     claim="claim",
     context="context",
 )
@@ -60,7 +60,7 @@ client = AsyncBespokeLabs(
 
 
 async def main() -> None:
-    factcheck_create_response = await client.factcheck.create(
+    factcheck_create_response = await client.minicheck.factcheck.create(
         claim="claim",
         context="context",
     )
@@ -97,7 +97,7 @@ from bespokelabs import BespokeLabs
 client = BespokeLabs()
 
 try:
-    client.factcheck.create(
+    client.minicheck.factcheck.create(
         claim="claim",
         context="context",
     )
@@ -143,7 +143,7 @@ client = BespokeLabs(
 )
 
 # Or, configure per-request:
-client.with_options(max_retries=5).factcheck.create(
+client.with_options(max_retries=5).minicheck.factcheck.create(
     claim="claim",
     context="context",
 )
@@ -169,7 +169,7 @@ client = BespokeLabs(
 )
 
 # Override per-request:
-client.with_options(timeout=5.0).factcheck.create(
+client.with_options(timeout=5.0).minicheck.factcheck.create(
     claim="claim",
     context="context",
 )
@@ -211,13 +211,13 @@ The "raw" Response object can be accessed by prefixing `.with_raw_response.` to 
 from bespokelabs import BespokeLabs
 
 client = BespokeLabs()
-response = client.factcheck.with_raw_response.create(
+response = client.minicheck.factcheck.with_raw_response.create(
     claim="claim",
     context="context",
 )
 print(response.headers.get('X-My-Header'))
 
-factcheck = response.parse()  # get the object that `factcheck.create()` would have returned
+factcheck = response.parse()  # get the object that `minicheck.factcheck.create()` would have returned
 print(factcheck.support_prob)
 ```
 
@@ -232,7 +232,7 @@ The above interface eagerly reads the full response body when you make the reque
 To stream the response body, use `.with_streaming_response` instead, which requires a context manager and only reads the response body once you call `.read()`, `.text()`, `.json()`, `.iter_bytes()`, `.iter_text()`, `.iter_lines()` or `.parse()`. In the async client, these are async methods.
 
 ```python
-with client.factcheck.with_streaming_response.create(
+with client.minicheck.factcheck.with_streaming_response.create(
     claim="claim",
     context="context",
 ) as response:

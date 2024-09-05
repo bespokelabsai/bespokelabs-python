@@ -4,22 +4,22 @@ from __future__ import annotations
 
 import httpx
 
-from ..types import factcheck_create_params
-from .._types import NOT_GIVEN, Body, Query, Headers, NotGiven
-from .._utils import (
+from ..._types import NOT_GIVEN, Body, Query, Headers, NotGiven
+from ..._utils import (
     maybe_transform,
     async_maybe_transform,
 )
-from .._compat import cached_property
-from .._resource import SyncAPIResource, AsyncAPIResource
-from .._response import (
+from ..._compat import cached_property
+from ..._resource import SyncAPIResource, AsyncAPIResource
+from ..._response import (
     to_raw_response_wrapper,
     to_streamed_response_wrapper,
     async_to_raw_response_wrapper,
     async_to_streamed_response_wrapper,
 )
-from .._base_client import make_request_options
-from ..types.factcheck_create_response import FactcheckCreateResponse
+from ..._base_client import make_request_options
+from ...types.minicheck import factcheck_create_params
+from ...types.minicheck.factcheck_create_response import FactcheckCreateResponse
 
 __all__ = ["FactcheckResource", "AsyncFactcheckResource"]
 
@@ -62,7 +62,7 @@ class FactcheckResource(SyncAPIResource):
           timeout: Override the client-level default timeout for this request, in seconds
         """
         return self._post(
-            "/v0/factcheck",
+            "/v0/minicheck/factcheck",
             body=maybe_transform(
                 {
                     "claim": claim,
@@ -115,7 +115,7 @@ class AsyncFactcheckResource(AsyncAPIResource):
           timeout: Override the client-level default timeout for this request, in seconds
         """
         return await self._post(
-            "/v0/factcheck",
+            "/v0/minicheck/factcheck",
             body=await async_maybe_transform(
                 {
                     "claim": claim,
