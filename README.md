@@ -32,11 +32,11 @@ client = BespokeLabs(
     auth_token=os.environ.get("BESPOKE_API_KEY"),
 )
 
-factcheck_create_response = client.minicheck.factcheck.create(
+factcheck = client.minicheck.factcheck.create(
     claim="claim",
     context="context",
 )
-print(factcheck_create_response.support_prob)
+print(factcheck.support_prob)
 ```
 
 While you can provide a `auth_token` keyword argument,
@@ -60,11 +60,11 @@ client = AsyncBespokeLabs(
 
 
 async def main() -> None:
-    factcheck_create_response = await client.minicheck.factcheck.create(
+    factcheck = await client.minicheck.factcheck.create(
         claim="claim",
         context="context",
     )
-    print(factcheck_create_response.support_prob)
+    print(factcheck.support_prob)
 
 
 asyncio.run(main())
@@ -322,6 +322,21 @@ We take backwards-compatibility seriously and work hard to ensure you can rely o
 
 We are keen for your feedback; please open an [issue](https://www.github.com/bespokelabsai/bespokelabs-python/issues) with questions, bugs, or suggestions.
 
+### Determining the installed version
+
+If you've upgraded to the latest version but aren't seeing any new features you were expecting then your python environment is likely still using an older version.
+
+You can determine the version that is being used at runtime with:
+
+```py
+import bespokelabs
+print(bespokelabs.__version__)
+```
+
 ## Requirements
 
 Python 3.7 or higher.
+
+## Contributing
+
+See [the contributing documentation](./CONTRIBUTING.md).
