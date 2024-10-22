@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 (2024-10-22)
+
+Full Changelog: [v0.1.1...v0.2.0](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.1.1...v0.2.0)
+
+### Features
+
+* **api:** api update ([#11](https://github.com/bespokelabsai/bespokelabs-python/issues/11)) ([6b7d04c](https://github.com/bespokelabsai/bespokelabs-python/commit/6b7d04c370a723783df80c09f267053ca71edaf5))
+
 ## 0.1.1 (2024-09-05)
 
 Full Changelog: [v0.1.0...v0.1.1](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.1.0...v0.1.1)
