@@ -28,8 +28,7 @@ import os
 from bespokelabs import BespokeLabs
 
 client = BespokeLabs(
-    # This is the default and can be omitted
-    auth_token=os.environ.get("BESPOKE_API_KEY"),
+    auth_token=os.environ.get("BESPOKE_API_KEY"),  # This is the default and can be omitted
 )
 
 factcheck = client.minicheck.factcheck.create(
@@ -54,8 +53,7 @@ import asyncio
 from bespokelabs import AsyncBespokeLabs
 
 client = AsyncBespokeLabs(
-    # This is the default and can be omitted
-    auth_token=os.environ.get("BESPOKE_API_KEY"),
+    auth_token=os.environ.get("BESPOKE_API_KEY"),  # This is the default and can be omitted
 )
 
 
