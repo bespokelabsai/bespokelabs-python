@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.2.0 (2024-12-03)
+
+Full Changelog: [v0.1.1...v0.2.0](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.1.1...v0.2.0)
+
+### Features
+
+* **api:** api update ([#11](https://github.com/bespokelabsai/bespokelabs-python/issues/11)) ([6b7d04c](https://github.com/bespokelabsai/bespokelabs-python/commit/6b7d04c370a723783df80c09f267053ca71edaf5))
+
+
+### Bug Fixes
+
+* **client:** compat with new httpx 0.28.0 release ([#25](https://github.com/bespokelabsai/bespokelabs-python/issues/25)) ([a136025](https://github.com/bespokelabsai/bespokelabs-python/commit/a136025df0b967d2d187efcf37a7cd8434d82191))
+
+
+### Chores
+
+* **internal:** bump pyright ([#26](https://github.com/bespokelabsai/bespokelabs-python/issues/26)) ([9b799e0](https://github.com/bespokelabsai/bespokelabs-python/commit/9b799e0d08cbb1a654964feccb5c32e2a71f1650))
+* **internal:** exclude mypy from running on tests ([#24](https://github.com/bespokelabsai/bespokelabs-python/issues/24)) ([09ac45c](https://github.com/bespokelabsai/bespokelabs-python/commit/09ac45c89cd7cbd22124828cd78deb7c4c991a6b))
+* **internal:** fix compat model_dump method when warnings are passed ([#21](https://github.com/bespokelabsai/bespokelabs-python/issues/21)) ([bc70cb2](https://github.com/bespokelabsai/bespokelabs-python/commit/bc70cb2cfde0d63e7255e0870114ca5bc4f7f52c))
+* rebuild project due to codegen change ([#13](https://github.com/bespokelabsai/bespokelabs-python/issues/13)) ([f0f4e01](https://github.com/bespokelabsai/bespokelabs-python/commit/f0f4e01ea78c3afe2ed086e98ff6d9eced208fe2))
+* rebuild project due to codegen change ([#14](https://github.com/bespokelabsai/bespokelabs-python/issues/14)) ([4d1b00a](https://github.com/bespokelabsai/bespokelabs-python/commit/4d1b00ab32c0e9e69b44942781d0a1e994dc51b3))
+* rebuild project due to codegen change ([#15](https://github.com/bespokelabsai/bespokelabs-python/issues/15)) ([16a313e](https://github.com/bespokelabsai/bespokelabs-python/commit/16a313ee5b0ed49d70fb8240bdf3cd60d8a35b7e))
+* rebuild project due to codegen change ([#16](https://github.com/bespokelabsai/bespokelabs-python/issues/16)) ([22ca99d](https://github.com/bespokelabsai/bespokelabs-python/commit/22ca99d2b5f38c431914ecf79389637c89c7e892))
+* rebuild project due to codegen change ([#17](https://github.com/bespokelabsai/bespokelabs-python/issues/17)) ([739400f](https://github.com/bespokelabsai/bespokelabs-python/commit/739400f6a85165c7c0bc42a64c705c5ca03229c6))
+* rebuild project due to codegen change ([#18](https://github.com/bespokelabsai/bespokelabs-python/issues/18)) ([c52a1db](https://github.com/bespokelabsai/bespokelabs-python/commit/c52a1dba63c3d58ba8e2efa00d28cbf5f062c06d))
+* rebuild project due to codegen change ([#19](https://github.com/bespokelabsai/bespokelabs-python/issues/19)) ([f719642](https://github.com/bespokelabsai/bespokelabs-python/commit/f7196420739ecfd3b8fbcbe665ef98597fd704af))
+* rebuild project due to codegen change ([#20](https://github.com/bespokelabsai/bespokelabs-python/issues/20)) ([ab615de](https://github.com/bespokelabsai/bespokelabs-python/commit/ab615de01029a6ea18e6691df04f57241ec4d54b))
+* remove now unused `cached-property` dep ([#23](https://github.com/bespokelabsai/bespokelabs-python/issues/23)) ([3f2bfe0](https://github.com/bespokelabsai/bespokelabs-python/commit/3f2bfe0cf97cbf79760badc7273003976f65278a))
+
+
+### Documentation
+
+* add info log level to readme ([#22](https://github.com/bespokelabsai/bespokelabs-python/issues/22)) ([ea78b4d](https://github.com/bespokelabsai/bespokelabs-python/commit/ea78b4de7416e724beaac54e68ecd1d0e5678045))
+
 ## 0.1.1 (2024-09-05)
 
 Full Changelog: [v0.1.0...v0.1.1](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.1.0...v0.1.1)

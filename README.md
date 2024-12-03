@@ -2,7 +2,7 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/bespokelabs.svg)](https://pypi.org/project/bespokelabs/)
 
-The Bespoke Labs Python library provides convenient access to the Bespoke Labs REST API from any Python 3.7+
+The Bespoke Labs Python library provides convenient access to the Bespoke Labs REST API from any Python 3.8+
 application. The library includes type definitions for all request params and response fields,
 and offers both synchronous and asynchronous clients powered by [httpx](https://github.com/encode/httpx).
 
@@ -28,15 +28,14 @@ import os
 from bespokelabs import BespokeLabs
 
 client = BespokeLabs(
-    # This is the default and can be omitted
-    auth_token=os.environ.get("BESPOKE_API_KEY"),
+    auth_token=os.environ.get("BESPOKE_API_KEY"),  # This is the default and can be omitted
 )
 
-factcheck_create_response = client.minicheck.factcheck.create(
+factcheck = client.minicheck.factcheck.create(
     claim="claim",
     context="context",
 )
-print(factcheck_create_response.support_prob)
+print(factcheck.support_prob)
 ```
 
 While you can provide a `auth_token` keyword argument,
@@ -54,17 +53,16 @@ import asyncio
 from bespokelabs import AsyncBespokeLabs
 
 client = AsyncBespokeLabs(
-    # This is the default and can be omitted
-    auth_token=os.environ.get("BESPOKE_API_KEY"),
+    auth_token=os.environ.get("BESPOKE_API_KEY"),  # This is the default and can be omitted
 )
 
 
 async def main() -> None:
-    factcheck_create_response = await client.minicheck.factcheck.create(
+    factcheck = await client.minicheck.factcheck.create(
         claim="claim",
         context="context",
     )
-    print(factcheck_create_response.support_prob)
+    print(factcheck.support_prob)
 
 
 asyncio.run(main())
@@ -185,11 +183,13 @@ Note that requests that time out are [retried twice by default](#retries).
 
 We use the standard library [`logging`](https://docs.python.org/3/library/logging.html) module.
 
-You can enable logging by setting the environment variable `BESPOKE_LABS_LOG` to `debug`.
+You can enable logging by setting the environment variable `BESPOKE_LABS_LOG` to `info`.
 
 ```shell
-$ export BESPOKE_LABS_LOG=debug
+$ export BESPOKE_LABS_LOG=info
 ```
+
+Or to `debug` for more verbose logging.
 
 ### How to tell whether `None` means `null` or missing
 
@@ -322,6 +322,21 @@ We take backwards-compatibility seriously and work hard to ensure you can rely o
 
 We are keen for your feedback; please open an [issue](https://www.github.com/bespokelabsai/bespokelabs-python/issues) with questions, bugs, or suggestions.
 
+### Determining the installed version
+
+If you've upgraded to the latest version but aren't seeing any new features you were expecting then your python environment is likely still using an older version.
+
+You can determine the version that is being used at runtime with:
+
+```py
+import bespokelabs
+print(bespokelabs.__version__)
+```
+
 ## Requirements
 
-Python 3.7 or higher.
+Python 3.8 or higher.
+
+## Contributing
+
+See [the contributing documentation](./CONTRIBUTING.md).
