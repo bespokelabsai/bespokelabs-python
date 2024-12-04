@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1 (2024-12-04)
+
+Full Changelog: [v0.2.0...v0.2.1](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.2.0...v0.2.1)
+
+### Chores
+
+* make the `Omit` type public ([#28](https://github.com/bespokelabsai/bespokelabs-python/issues/28)) ([e6c8305](https://github.com/bespokelabsai/bespokelabs-python/commit/e6c8305b287a400bc63b8d40375363dc8f310850))
+
 ## 0.2.0 (2024-12-03)
 
 Full Changelog: [v0.1.1...v0.2.0](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.1.1...v0.2.0)
