@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.1 (2024-12-13)
+
+Full Changelog: [v0.2.0...v0.2.1](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.2.0...v0.2.1)
+
+### Chores
+
+* **internal:** add support for TypeAliasType ([#32](https://github.com/bespokelabsai/bespokelabs-python/issues/32)) ([2b348b2](https://github.com/bespokelabsai/bespokelabs-python/commit/2b348b211e7bba1d4a96bad405b4a65ccc927705))
+* **internal:** bump pyright ([#31](https://github.com/bespokelabsai/bespokelabs-python/issues/31)) ([96479d8](https://github.com/bespokelabsai/bespokelabs-python/commit/96479d8058d4665f65e5a72bae5a178023333a5a))
+* **internal:** codegen related update ([#30](https://github.com/bespokelabsai/bespokelabs-python/issues/30)) ([5dd97d0](https://github.com/bespokelabsai/bespokelabs-python/commit/5dd97d0017c00888af7c3a332e627f85cd34cfae))
+* make the `Omit` type public ([#28](https://github.com/bespokelabsai/bespokelabs-python/issues/28)) ([e6c8305](https://github.com/bespokelabsai/bespokelabs-python/commit/e6c8305b287a400bc63b8d40375363dc8f310850))
+
 ## 0.2.0 (2024-12-03)
 
 Full Changelog: [v0.1.1...v0.2.0](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.1.1...v0.2.0)
