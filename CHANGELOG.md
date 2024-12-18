@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.2 (2024-12-18)
+
+Full Changelog: [v0.2.1...v0.2.2](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.2.1...v0.2.2)
+
+### Chores
+
+* **internal:** codegen related update ([#34](https://github.com/bespokelabsai/bespokelabs-python/issues/34)) ([42d20f2](https://github.com/bespokelabsai/bespokelabs-python/commit/42d20f2c5dbd702f8dd5c7527077dd8bbd25ff60))
+* **internal:** codegen related update ([#36](https://github.com/bespokelabsai/bespokelabs-python/issues/36)) ([33c717e](https://github.com/bespokelabsai/bespokelabs-python/commit/33c717e6a5c4b9e48ba736ac8da580c4ba2b107f))
+* **internal:** codegen related update ([#38](https://github.com/bespokelabsai/bespokelabs-python/issues/38)) ([9b182a3](https://github.com/bespokelabsai/bespokelabs-python/commit/9b182a3c9b37aa6c648e301b1b7dd23516bdba6b))
+* **internal:** fix some typos ([#39](https://github.com/bespokelabsai/bespokelabs-python/issues/39)) ([3c46922](https://github.com/bespokelabsai/bespokelabs-python/commit/3c46922f5752524232cc69e4c5fb350145cb0ba5))
+* **internal:** updated imports ([#37](https://github.com/bespokelabsai/bespokelabs-python/issues/37)) ([5f521c0](https://github.com/bespokelabsai/bespokelabs-python/commit/5f521c0a9246e17c58f1d9a4e1c7192651615bba))
+
 ## 0.2.1 (2024-12-13)
 
 Full Changelog: [v0.2.0...v0.2.1](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.2.0...v0.2.1)
