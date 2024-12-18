@@ -8,7 +8,7 @@ from typing_extensions import Self, override
 
 import httpx
 
-from . import resources, _exceptions
+from . import _exceptions
 from ._qs import Querystring
 from ._types import (
     NOT_GIVEN,
@@ -31,13 +31,13 @@ from ._base_client import (
     SyncAPIClient,
     AsyncAPIClient,
 )
+from .resources.minicheck import minicheck
 
 __all__ = [
     "Timeout",
     "Transport",
     "ProxiesTypes",
     "RequestOptions",
-    "resources",
     "BespokeLabs",
     "AsyncBespokeLabs",
     "Client",
@@ -46,7 +46,7 @@ __all__ = [
 
 
 class BespokeLabs(SyncAPIClient):
-    minicheck: resources.MinicheckResource
+    minicheck: minicheck.MinicheckResource
     with_raw_response: BespokeLabsWithRawResponse
     with_streaming_response: BespokeLabsWithStreamedResponse
 
@@ -104,7 +104,7 @@ class BespokeLabs(SyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
-        self.minicheck = resources.MinicheckResource(self)
+        self.minicheck = minicheck.MinicheckResource(self)
         self.with_raw_response = BespokeLabsWithRawResponse(self)
         self.with_streaming_response = BespokeLabsWithStreamedResponse(self)
 
@@ -214,7 +214,7 @@ class BespokeLabs(SyncAPIClient):
 
 
 class AsyncBespokeLabs(AsyncAPIClient):
-    minicheck: resources.AsyncMinicheckResource
+    minicheck: minicheck.AsyncMinicheckResource
     with_raw_response: AsyncBespokeLabsWithRawResponse
     with_streaming_response: AsyncBespokeLabsWithStreamedResponse
 
@@ -272,7 +272,7 @@ class AsyncBespokeLabs(AsyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
-        self.minicheck = resources.AsyncMinicheckResource(self)
+        self.minicheck = minicheck.AsyncMinicheckResource(self)
         self.with_raw_response = AsyncBespokeLabsWithRawResponse(self)
         self.with_streaming_response = AsyncBespokeLabsWithStreamedResponse(self)
 
@@ -383,22 +383,22 @@ class AsyncBespokeLabs(AsyncAPIClient):
 
 class BespokeLabsWithRawResponse:
     def __init__(self, client: BespokeLabs) -> None:
-        self.minicheck = resources.MinicheckResourceWithRawResponse(client.minicheck)
+        self.minicheck = minicheck.MinicheckResourceWithRawResponse(client.minicheck)
 
 
 class AsyncBespokeLabsWithRawResponse:
     def __init__(self, client: AsyncBespokeLabs) -> None:
-        self.minicheck = resources.AsyncMinicheckResourceWithRawResponse(client.minicheck)
+        self.minicheck = minicheck.AsyncMinicheckResourceWithRawResponse(client.minicheck)
 
 
 class BespokeLabsWithStreamedResponse:
     def __init__(self, client: BespokeLabs) -> None:
-        self.minicheck = resources.MinicheckResourceWithStreamingResponse(client.minicheck)
+        self.minicheck = minicheck.MinicheckResourceWithStreamingResponse(client.minicheck)
 
 
 class AsyncBespokeLabsWithStreamedResponse:
     def __init__(self, client: AsyncBespokeLabs) -> None:
-        self.minicheck = resources.AsyncMinicheckResourceWithStreamingResponse(client.minicheck)
+        self.minicheck = minicheck.AsyncMinicheckResourceWithStreamingResponse(client.minicheck)
 
 
 Client = BespokeLabs
