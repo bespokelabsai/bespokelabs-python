@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.3 (2025-01-09)
+
+Full Changelog: [v0.2.2...v0.2.3](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.2.2...v0.2.3)
+
+### Bug Fixes
+
+* **client:** only call .close() when needed ([#44](https://github.com/bespokelabsai/bespokelabs-python/issues/44)) ([ea2bd4e](https://github.com/bespokelabsai/bespokelabs-python/commit/ea2bd4eea5b94df8223bb47369f35449637b8f05))
+
+
+### Chores
+
+* **internal:** bump httpx dependency ([#43](https://github.com/bespokelabsai/bespokelabs-python/issues/43)) ([b4224bd](https://github.com/bespokelabsai/bespokelabs-python/commit/b4224bd9ed1ac45bc2c44c5322b885f9936ef4c9))
+* **internal:** codegen related update ([#41](https://github.com/bespokelabsai/bespokelabs-python/issues/41)) ([e2f9c92](https://github.com/bespokelabsai/bespokelabs-python/commit/e2f9c92f68034ac50ea5f8ba94ab4017af88b60f))
+* **internal:** codegen related update ([#46](https://github.com/bespokelabsai/bespokelabs-python/issues/46)) ([209d865](https://github.com/bespokelabsai/bespokelabs-python/commit/209d8658c61592da6409b8cc14a5f1e56f4f31b0))
+
 ## 0.2.2 (2024-12-18)
 
 Full Changelog: [v0.2.1...v0.2.2](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.2.1...v0.2.2)
