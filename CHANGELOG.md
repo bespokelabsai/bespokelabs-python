@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.4 (2025-01-10)
+
+Full Changelog: [v0.2.3...v0.2.4](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.2.3...v0.2.4)
+
+### Bug Fixes
+
+* correctly handle deserialising `cls` fields ([#48](https://github.com/bespokelabsai/bespokelabs-python/issues/48)) ([2c35a23](https://github.com/bespokelabsai/bespokelabs-python/commit/2c35a2394ea424fd93ba993cc3a00d601fa26245))
+
 ## 0.2.3 (2025-01-09)
 
 Full Changelog: [v0.2.2...v0.2.3](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.2.2...v0.2.3)
