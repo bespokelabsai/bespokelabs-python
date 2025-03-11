@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.3.0 (2025-03-11)
+
+Full Changelog: [v0.2.3...v0.3.0](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.2.3...v0.3.0)
+
+### Features
+
+* **client:** allow passing `NotGiven` for body ([#63](https://github.com/bespokelabsai/bespokelabs-python/issues/63)) ([68cbf55](https://github.com/bespokelabsai/bespokelabs-python/commit/68cbf556fa6939420be452cb2614a8cd59657f24))
+* **client:** send `X-Stainless-Read-Timeout` header ([#58](https://github.com/bespokelabsai/bespokelabs-python/issues/58)) ([851c55f](https://github.com/bespokelabsai/bespokelabs-python/commit/851c55f37a80dcc515857fe0e0b1f568034f2a14))
+
+
+### Bug Fixes
+
+* asyncify on non-asyncio runtimes ([#62](https://github.com/bespokelabsai/bespokelabs-python/issues/62)) ([e4ff682](https://github.com/bespokelabsai/bespokelabs-python/commit/e4ff682580c7fb4d903e5699a7f828bad4fabd93))
+* **client:** mark some request bodies as optional ([68cbf55](https://github.com/bespokelabsai/bespokelabs-python/commit/68cbf556fa6939420be452cb2614a8cd59657f24))
+* correctly handle deserialising `cls` fields ([#48](https://github.com/bespokelabsai/bespokelabs-python/issues/48)) ([2c35a23](https://github.com/bespokelabsai/bespokelabs-python/commit/2c35a2394ea424fd93ba993cc3a00d601fa26245))
+* **tests:** make test_get_platform less flaky ([#52](https://github.com/bespokelabsai/bespokelabs-python/issues/52)) ([1512d9d](https://github.com/bespokelabsai/bespokelabs-python/commit/1512d9dadae92fd5fa0b1262d28bbc086b3d6523))
+
+
+### Chores
+
+* **docs:** update client docstring ([#67](https://github.com/bespokelabsai/bespokelabs-python/issues/67)) ([73aca81](https://github.com/bespokelabsai/bespokelabs-python/commit/73aca8174d7247fd66672dcaa046a7cc1fc7aeaf))
+* **internal:** avoid pytest-asyncio deprecation warning ([#53](https://github.com/bespokelabsai/bespokelabs-python/issues/53)) ([a074b2c](https://github.com/bespokelabsai/bespokelabs-python/commit/a074b2c660f9617b3771f7028366ef5afce6bc9e))
+* **internal:** bummp ruff dependency ([#57](https://github.com/bespokelabsai/bespokelabs-python/issues/57)) ([66e89ec](https://github.com/bespokelabsai/bespokelabs-python/commit/66e89ec55166c4428dce2d79f8a88f597fb59b24))
+* **internal:** change default timeout to an int ([#56](https://github.com/bespokelabsai/bespokelabs-python/issues/56)) ([68f2e60](https://github.com/bespokelabsai/bespokelabs-python/commit/68f2e605d133b699e685a3d006fdaf7fc2dff068))
+* **internal:** codegen related update ([#50](https://github.com/bespokelabsai/bespokelabs-python/issues/50)) ([95246ac](https://github.com/bespokelabsai/bespokelabs-python/commit/95246ac9708bf03aeb7bfd93c57c73d2ec7c4d1f))
+* **internal:** fix devcontainers setup ([#64](https://github.com/bespokelabsai/bespokelabs-python/issues/64)) ([900f05a](https://github.com/bespokelabsai/bespokelabs-python/commit/900f05ad058b3e42de948cdd942b59a86e2f512a))
+* **internal:** fix type traversing dictionary params ([#59](https://github.com/bespokelabsai/bespokelabs-python/issues/59)) ([706e9ac](https://github.com/bespokelabsai/bespokelabs-python/commit/706e9ac51914e6eb1aef6f18ee5b9390c49d8c40))
+* **internal:** minor formatting changes ([#55](https://github.com/bespokelabsai/bespokelabs-python/issues/55)) ([6f4fc83](https://github.com/bespokelabsai/bespokelabs-python/commit/6f4fc83dedd0ce8538cc651a6ff6e8cedca5e5af))
+* **internal:** minor style changes ([#54](https://github.com/bespokelabsai/bespokelabs-python/issues/54)) ([f381d90](https://github.com/bespokelabsai/bespokelabs-python/commit/f381d90ec1a5637392dd9772be23a4e4ad3224ac))
+* **internal:** minor type handling changes ([#60](https://github.com/bespokelabsai/bespokelabs-python/issues/60)) ([02ebbad](https://github.com/bespokelabsai/bespokelabs-python/commit/02ebbadfc5c199bef8e6065f18d5ad5ecd7df0f4))
+* **internal:** properly set __pydantic_private__ ([#65](https://github.com/bespokelabsai/bespokelabs-python/issues/65)) ([6f99289](https://github.com/bespokelabsai/bespokelabs-python/commit/6f99289294ada243b2b221ca7aff097aca9f9696))
+* **internal:** remove unused http client options forwarding ([#68](https://github.com/bespokelabsai/bespokelabs-python/issues/68)) ([3ca5954](https://github.com/bespokelabsai/bespokelabs-python/commit/3ca59544326fd68f92afcdb1dc5fd9d12baaf77a))
+* **internal:** update client tests ([#61](https://github.com/bespokelabsai/bespokelabs-python/issues/61)) ([be4c23a](https://github.com/bespokelabsai/bespokelabs-python/commit/be4c23aaedade0075457b1f2326902d85b2048fb))
+
+
+### Documentation
+
+* **raw responses:** fix duplicate `the` ([#51](https://github.com/bespokelabsai/bespokelabs-python/issues/51)) ([ad4d17f](https://github.com/bespokelabsai/bespokelabs-python/commit/ad4d17f7ddceadfcc210383fe3c580738b9dffcd))
+* update URLs from stainlessapi.com to stainless.com ([#66](https://github.com/bespokelabsai/bespokelabs-python/issues/66)) ([9935243](https://github.com/bespokelabsai/bespokelabs-python/commit/99352431d0860e6ec7be7d43a5f19839a60378a4))
+
 ## 0.2.3 (2025-01-09)
 
 Full Changelog: [v0.2.2...v0.2.3](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.2.2...v0.2.3)
