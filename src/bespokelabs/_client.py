@@ -76,7 +76,7 @@ class BespokeLabs(SyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new synchronous bespoke_labs client instance.
+        """Construct a new synchronous BespokeLabs client instance.
 
         This automatically infers the `auth_token` argument from the `BESPOKE_API_KEY` environment variable if it is not provided.
         """
@@ -244,7 +244,7 @@ class AsyncBespokeLabs(AsyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new async bespoke_labs client instance.
+        """Construct a new async AsyncBespokeLabs client instance.
 
         This automatically infers the `auth_token` argument from the `BESPOKE_API_KEY` environment variable if it is not provided.
         """

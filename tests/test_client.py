@@ -6,6 +6,7 @@ import gc
 import os
 import sys
 import json
+import time
 import asyncio
 import inspect
 import subprocess
@@ -22,6 +23,7 @@ from pydantic import ValidationError
 
 from bespokelabs import BespokeLabs, AsyncBespokeLabs, APIResponseValidationError
 from bespokelabs._types import Omit
+from bespokelabs._utils import maybe_transform
 from bespokelabs._models import BaseModel, FinalRequestOptions
 from bespokelabs._constants import RAW_RESPONSE_HEADER
 from bespokelabs._exceptions import APIStatusError, APITimeoutError, BespokeLabsError, APIResponseValidationError
@@ -31,6 +33,7 @@ from bespokelabs._base_client import (
     BaseClient,
     make_request_options,
 )
+from bespokelabs.types.minicheck.factcheck_create_params import FactcheckCreateParams
 
 from .utils import update_env
 
@@ -729,7 +732,7 @@ class TestBespokeLabs:
         with pytest.raises(APITimeoutError):
             self.client.post(
                 "/v0/minicheck/factcheck",
-                body=cast(object, dict(claim="claim", context="context")),
+                body=cast(object, maybe_transform(dict(claim="claim", context="context"), FactcheckCreateParams)),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
             )
@@ -744,7 +747,7 @@ class TestBespokeLabs:
         with pytest.raises(APIStatusError):
             self.client.post(
                 "/v0/minicheck/factcheck",
-                body=cast(object, dict(claim="claim", context="context")),
+                body=cast(object, maybe_transform(dict(claim="claim", context="context"), FactcheckCreateParams)),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
             )
@@ -1512,7 +1515,7 @@ class TestAsyncBespokeLabs:
         with pytest.raises(APITimeoutError):
             await self.client.post(
                 "/v0/minicheck/factcheck",
-                body=cast(object, dict(claim="claim", context="context")),
+                body=cast(object, maybe_transform(dict(claim="claim", context="context"), FactcheckCreateParams)),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
             )
@@ -1527,7 +1530,7 @@ class TestAsyncBespokeLabs:
         with pytest.raises(APIStatusError):
             await self.client.post(
                 "/v0/minicheck/factcheck",
-                body=cast(object, dict(claim="claim", context="context")),
+                body=cast(object, maybe_transform(dict(claim="claim", context="context"), FactcheckCreateParams)),
                 cast_to=httpx.Response,
                 options={"headers": {RAW_RESPONSE_HEADER: "stream"}},
             )
@@ -1645,10 +1648,20 @@ class TestAsyncBespokeLabs:
             [sys.executable, "-c", test_code],
             text=True,
         ) as process:
-            try:
-                process.wait(2)
-                if process.returncode:
-                    raise AssertionError("calling get_platform using asyncify resulted in a non-zero exit code")
-            except subprocess.TimeoutExpired as e:
-                process.kill()
-                raise AssertionError("calling get_platform using asyncify resulted in a hung process") from e
+            timeout = 10  # seconds
+
+            start_time = time.monotonic()
+            while True:
+                return_code = process.poll()
+                if return_code is not None:
+                    if return_code != 0:
+                        raise AssertionError("calling get_platform using asyncify resulted in a non-zero exit code")
+
+                    # success
+                    break
+
+                if time.monotonic() - start_time > timeout:
+                    process.kill()
+                    raise AssertionError("calling get_platform using asyncify resulted in a hung process")
+
+                time.sleep(0.1)
