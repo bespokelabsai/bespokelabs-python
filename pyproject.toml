@@ -1,6 +1,6 @@
 [project]
 name = "bespokelabs"
-version = "0.2.3"
+version = "0.3.0"
 description = "The official Python library for the bespoke_labs API"
 dynamic = ["readme"]
 license = "Apache-2.0"
@@ -96,9 +96,11 @@ include = [
 ]
 
 [tool.hatch.build.targets.wheel]
+core-metadata-version = "2.4"
 packages = ["src/bespokelabs"]
 
 [tool.hatch.build.targets.sdist]
+core-metadata-version = "2.4"
 # Basically everything except hidden files/directories (such as .github, .devcontainers, .python-version, etc)
 include = [
   "/*.toml",

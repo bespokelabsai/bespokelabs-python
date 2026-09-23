@@ -43,6 +43,72 @@ we recommend using [python-dotenv](https://pypi.org/project/python-dotenv/)
 to add `BESPOKE_API_KEY="My Auth Token"` to your `.env` file
 so that your Auth Token is not stored in source control.
 
+## Nimble
+
+Nimble is available through the same client and `BESPOKE_API_KEY` as MiniCheck:
+
+```python
+from bespokelabs import BespokeLabs
+
+with BespokeLabs() as client:
+    result = client.nimble.system_one(
+        state="Please refund the duplicate payment.",
+        questions={
+            "refund": {"type": "noul", "instructions": "Does the customer request a refund?"},
+            "department": {
+                "type": "choice",
+                "instructions": "Which department should handle this request?",
+                "criteria": {"billing": "Payments and refunds", "technical": "Software bugs"},
+            },
+            "urgency": {
+                "type": "score",
+                "instructions": "Assess operational urgency.",
+                "criteria": ["Service works normally", "Partial outage", "Complete outage"],
+            },
+        },
+    )
+    print(result.nouls["refund"].noul)
+    print(result.choices["department"].choice)
+    print(result.scores["urgency"].score)
+```
+
+The default client sends `POST /v1/nimble/systemone` to `https://api.bespokelabs.ai`.
+For a custom deployment, set `base_url` or `BESPOKE_LABS_BASE_URL` to a gateway exposing
+the same route. This route differs from a standalone Nimble model server's `/v1/systemone`.
+A custom gateway without the route returns 404; one without a configured model server returns 503.
+
+`Noul` returns the probability of true. `Choice` returns a selected option and the probability
+of each option. `Score` returns the expected zero-based rubric index: for three levels, its
+range is 0–2. Confidence measures distribution concentration, not calibrated correctness.
+There are at most 64 questions per request and 2–26 candidates per Choice or Score.
+The default model is `nimble-latest`; pass `model=` to select another server-supported model.
+
+Answers are typed and available through `result.answers`, or through `result.nouls`,
+`result.choices`, and `result.scores`. Question types are exported from
+`bespokelabs.types.nimble`. No separate `bespokelabs-nimble` installation is needed.
+
+The same resource is available on `AsyncBespokeLabs`:
+
+```python
+from bespokelabs import AsyncBespokeLabs
+
+async def check_refund():
+    async with AsyncBespokeLabs() as client:
+        result = await client.nimble.system_one(
+            state="Please refund the duplicate payment.",
+            questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
+        )
+        return result.nouls["refund"].noul
+```
+
+The standard SDK options work for Nimble, including `with_options`, retries, per-call timeouts,
+`client.nimble.with_raw_response.system_one(...)`, and
+`client.nimble.with_streaming_response.system_one(...)`. Streaming here controls HTTP body
+reading; it does not produce incremental model answers. Increase the request timeout for
+slow responses (for example, `timeout=180.0`). A longer timeout does not make a server wait
+when it immediately returns an overload or startup error such as 503 or 529; those responses
+use the SDK's configured retry policy.
+
 ## Async usage
 
 Simply import `AsyncBespokeLabs` instead of `BespokeLabs` and use `await` with each API call:

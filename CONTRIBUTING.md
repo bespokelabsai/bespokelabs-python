@@ -127,3 +127,22 @@ You can release to package managers by using [the `Publish PyPI` GitHub action](
 
 If you need to manually release a package, you can run the `bin/publish-pypi` script with a `PYPI_TOKEN` set on
 the environment.
+
+## Nimble resource maintenance
+
+The Nimble resource is a handwritten extension of the existing generated SDK. It uses the
+same base client; it does not depend on the standalone `bespokelabs-nimble` package.
+The gateway contract lives at `POST /v1/nimble/systemone` (operation ID `nimble_system_one`).
+Before regenerating with Stainless, add this operation and its question/answer schemas to
+the upstream OpenAPI input, or preserve the Nimble resource, types, and `_client.py` wiring.
+This checkout does not contain the upstream Stainless configuration, so no regeneration is
+claimed by this change.
+
+Offline Nimble tests do not require Prism, API credentials, or a running model:
+
+```bash
+PYTHONPATH=src python -m pytest tests/test_nimble.py
+```
+
+The fixture in `tests/fixtures/nimble-systemone.json` is the first recorded response from
+[Bespoke Nimble's smoke test](https://github.com/bespokelabsai/nimble/blob/f136b3f75721fda4ea961f73993cc50b08488835/docs/assets/modal-serving-smoke.json).
