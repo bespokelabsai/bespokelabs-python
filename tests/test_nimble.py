@@ -93,7 +93,7 @@ async def test_async_nimble(strict: bool, surface: str) -> None:
         return httpx.Response(200, json=PAYLOAD)
 
     async with AsyncBespokeLabs(
-        auth_token="bespoke-test",
+        api_key="bespoke-test",
         _strict_response_validation=strict,
         http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
     ) as client:
@@ -123,7 +123,7 @@ def test_minicheck_and_nimble_share_client() -> None:
         return httpx.Response(200, json=PAYLOAD if "nimble" in request.url.path else {"support_prob": 0.9})
 
     with BespokeLabs(
-        auth_token="bespoke-test", http_client=httpx.Client(transport=httpx.MockTransport(handler))
+        api_key="bespoke-test", http_client=httpx.Client(transport=httpx.MockTransport(handler))
     ) as client:
         assert client.minicheck.factcheck.create(claim="claim", context="context").support_prob == 0.9
         assert_answers(client.nimble.system_one(state="Refund", questions=QUESTIONS))
@@ -140,7 +140,7 @@ def test_request_options_and_model_override() -> None:
         assert request.extensions["timeout"]["read"] == 9.0
         return httpx.Response(200, json=PAYLOAD)
 
-    with BespokeLabs(auth_token="key", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
+    with BespokeLabs(api_key="key", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
         client.nimble.system_one(
             state="text",
             questions=QUESTIONS,
@@ -161,7 +161,7 @@ def test_existing_retry_and_authentication_errors() -> None:
             return httpx.Response(529, json={"detail": "busy"}, headers={"retry-after-ms": "1"})
         return httpx.Response(401, json={"detail": "invalid key"})
 
-    with BespokeLabs(auth_token="key", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
+    with BespokeLabs(api_key="key", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
         with pytest.raises(AuthenticationError):
             client.nimble.system_one(state="text", questions=QUESTIONS)
     assert len(attempts) == 2
@@ -169,7 +169,7 @@ def test_existing_retry_and_authentication_errors() -> None:
 
 def test_strict_response_validation() -> None:
     with BespokeLabs(
-        auth_token="key",
+        api_key="key",
         _strict_response_validation=True,
         http_client=httpx.Client(transport=httpx.MockTransport(lambda _: httpx.Response(200, json={}))),
     ) as client:
