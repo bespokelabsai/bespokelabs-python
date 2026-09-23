@@ -28,7 +28,7 @@ import os
 from bespokelabs import BespokeLabs
 
 client = BespokeLabs(
-    auth_token=os.environ.get("BESPOKE_API_KEY"),  # This is the default and can be omitted
+    api_key=os.environ.get("BESPOKE_API_KEY"),  # This is the default and can be omitted
 )
 
 factcheck = client.minicheck.factcheck.create(
@@ -38,10 +38,10 @@ factcheck = client.minicheck.factcheck.create(
 print(factcheck.support_prob)
 ```
 
-While you can provide a `auth_token` keyword argument,
+While you can provide an `api_key` keyword argument,
 we recommend using [python-dotenv](https://pypi.org/project/python-dotenv/)
-to add `BESPOKE_API_KEY="My Auth Token"` to your `.env` file
-so that your Auth Token is not stored in source control.
+to add `BESPOKE_API_KEY="My API Key"` to your `.env` file
+so that your API key is not stored in source control.
 
 ## Nimble
 
@@ -119,7 +119,7 @@ import asyncio
 from bespokelabs import AsyncBespokeLabs
 
 client = AsyncBespokeLabs(
-    auth_token=os.environ.get("BESPOKE_API_KEY"),  # This is the default and can be omitted
+    api_key=os.environ.get("BESPOKE_API_KEY"),  # This is the default and can be omitted
 )
 
 

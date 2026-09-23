@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eux
+set -euo pipefail
 mkdir -p dist
 rye build --clean
 # Patching importlib-metadata version until upstream library version is updated

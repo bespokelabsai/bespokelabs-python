@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0 (2026-09-22)
+
+- Rename the `auth_token` client option and attribute to `api_key` in synchronous
+  and asynchronous clients, including `copy()` and `with_options()`. Update
+  existing callers to use `api_key=`. The `BESPOKE_API_KEY` environment variable
+  and the `api_key` request header are unchanged.
+
 ## 0.3.0 (2026-09-22)
 
 - Add synchronous and asynchronous `client.nimble.system_one` with typed Noul, Choice, and Score answers.

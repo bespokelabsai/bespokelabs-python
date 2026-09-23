@@ -35,7 +35,7 @@ from bespokelabs._base_client import (
 from .utils import update_env
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
-auth_token = "My Auth Token"
+api_key = "My API Key"
 
 
 def _get_params(client: BaseClient[Any, Any]) -> dict[str, str]:
@@ -57,7 +57,7 @@ def _get_open_connections(client: BespokeLabs | AsyncBespokeLabs) -> int:
 
 
 class TestBespokeLabs:
-    client = BespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=True)
+    client = BespokeLabs(base_url=base_url, api_key=api_key, _strict_response_validation=True)
 
     @pytest.mark.respx(base_url=base_url)
     def test_raw_response(self, respx_mock: MockRouter) -> None:
@@ -83,9 +83,11 @@ class TestBespokeLabs:
         copied = self.client.copy()
         assert id(copied) != id(self.client)
 
-        copied = self.client.copy(auth_token="another My Auth Token")
-        assert copied.auth_token == "another My Auth Token"
-        assert self.client.auth_token == "My Auth Token"
+        copied = self.client.copy(api_key="another My API Key")
+        assert copied.api_key == "another My API Key"
+        assert self.client.api_key == "My API Key"
+        assert copied.auth_headers == {"api_key": "another My API Key"}
+        assert self.client.with_options(api_key="override-key").auth_headers == {"api_key": "override-key"}
 
     def test_copy_default_options(self) -> None:
         # options that have a default are overridden correctly
@@ -105,7 +107,7 @@ class TestBespokeLabs:
 
     def test_copy_default_headers(self) -> None:
         client = BespokeLabs(
-            base_url=base_url, auth_token=auth_token, _strict_response_validation=True, default_headers={"X-Foo": "bar"}
+            base_url=base_url, api_key=api_key, _strict_response_validation=True, default_headers={"X-Foo": "bar"}
         )
         assert client.default_headers["X-Foo"] == "bar"
 
@@ -139,7 +141,7 @@ class TestBespokeLabs:
 
     def test_copy_default_query(self) -> None:
         client = BespokeLabs(
-            base_url=base_url, auth_token=auth_token, _strict_response_validation=True, default_query={"foo": "bar"}
+            base_url=base_url, api_key=api_key, _strict_response_validation=True, default_query={"foo": "bar"}
         )
         assert _get_params(client)["foo"] == "bar"
 
@@ -264,7 +266,7 @@ class TestBespokeLabs:
 
     def test_client_timeout_option(self) -> None:
         client = BespokeLabs(
-            base_url=base_url, auth_token=auth_token, _strict_response_validation=True, timeout=httpx.Timeout(0)
+            base_url=base_url, api_key=api_key, _strict_response_validation=True, timeout=httpx.Timeout(0)
         )
 
         request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
@@ -275,7 +277,7 @@ class TestBespokeLabs:
         # custom timeout given to the httpx client should be used
         with httpx.Client(timeout=None) as http_client:
             client = BespokeLabs(
-                base_url=base_url, auth_token=auth_token, _strict_response_validation=True, http_client=http_client
+                base_url=base_url, api_key=api_key, _strict_response_validation=True, http_client=http_client
             )
 
             request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
@@ -285,7 +287,7 @@ class TestBespokeLabs:
         # no timeout given to the httpx client should not use the httpx default
         with httpx.Client() as http_client:
             client = BespokeLabs(
-                base_url=base_url, auth_token=auth_token, _strict_response_validation=True, http_client=http_client
+                base_url=base_url, api_key=api_key, _strict_response_validation=True, http_client=http_client
             )
 
             request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
@@ -295,7 +297,7 @@ class TestBespokeLabs:
         # explicitly passing the default timeout currently results in it being ignored
         with httpx.Client(timeout=HTTPX_DEFAULT_TIMEOUT) as http_client:
             client = BespokeLabs(
-                base_url=base_url, auth_token=auth_token, _strict_response_validation=True, http_client=http_client
+                base_url=base_url, api_key=api_key, _strict_response_validation=True, http_client=http_client
             )
 
             request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
@@ -307,14 +309,14 @@ class TestBespokeLabs:
             async with httpx.AsyncClient() as http_client:
                 BespokeLabs(
                     base_url=base_url,
-                    auth_token=auth_token,
+                    api_key=api_key,
                     _strict_response_validation=True,
                     http_client=cast(Any, http_client),
                 )
 
     def test_default_headers_option(self) -> None:
         client = BespokeLabs(
-            base_url=base_url, auth_token=auth_token, _strict_response_validation=True, default_headers={"X-Foo": "bar"}
+            base_url=base_url, api_key=api_key, _strict_response_validation=True, default_headers={"X-Foo": "bar"}
         )
         request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
         assert request.headers.get("x-foo") == "bar"
@@ -322,7 +324,7 @@ class TestBespokeLabs:
 
         client2 = BespokeLabs(
             base_url=base_url,
-            auth_token=auth_token,
+            api_key=api_key,
             _strict_response_validation=True,
             default_headers={
                 "X-Foo": "stainless",
@@ -334,19 +336,27 @@ class TestBespokeLabs:
         assert request.headers.get("x-stainless-lang") == "my-overriding-header"
 
     def test_validate_headers(self) -> None:
-        client = BespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=True)
+        client = BespokeLabs(base_url=base_url, api_key=api_key, _strict_response_validation=True)
         request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-        assert request.headers.get("api_key") == auth_token
+        assert request.headers.get("api_key") == api_key
 
-        with pytest.raises(BespokeLabsError):
+        with pytest.raises(BespokeLabsError, match="api_key client option"):
             with update_env(**{"BESPOKE_API_KEY": Omit()}):
-                client2 = BespokeLabs(base_url=base_url, auth_token=None, _strict_response_validation=True)
+                client2 = BespokeLabs(base_url=base_url, api_key=None, _strict_response_validation=True)
             _ = client2
+
+    def test_api_key_environment_and_override(self) -> None:
+        with update_env(BESPOKE_API_KEY="environment-key"):
+            with BespokeLabs() as inferred, BespokeLabs(api_key="explicit-key") as explicit:
+                assert inferred.api_key == "environment-key"
+                assert inferred.auth_headers == {"api_key": "environment-key"}
+                assert explicit.api_key == "explicit-key"
+                assert explicit.auth_headers == {"api_key": "explicit-key"}
 
     def test_default_query_option(self) -> None:
         client = BespokeLabs(
             base_url=base_url,
-            auth_token=auth_token,
+            api_key=api_key,
             _strict_response_validation=True,
             default_query={"query_param": "bar"},
         )
@@ -549,7 +559,7 @@ class TestBespokeLabs:
 
     def test_base_url_setter(self) -> None:
         client = BespokeLabs(
-            base_url="https://example.com/from_init", auth_token=auth_token, _strict_response_validation=True
+            base_url="https://example.com/from_init", api_key=api_key, _strict_response_validation=True
         )
         assert client.base_url == "https://example.com/from_init/"
 
@@ -559,18 +569,18 @@ class TestBespokeLabs:
 
     def test_base_url_env(self) -> None:
         with update_env(BESPOKE_LABS_BASE_URL="http://localhost:5000/from/env"):
-            client = BespokeLabs(auth_token=auth_token, _strict_response_validation=True)
+            client = BespokeLabs(api_key=api_key, _strict_response_validation=True)
             assert client.base_url == "http://localhost:5000/from/env/"
 
     @pytest.mark.parametrize(
         "client",
         [
             BespokeLabs(
-                base_url="http://localhost:5000/custom/path/", auth_token=auth_token, _strict_response_validation=True
+                base_url="http://localhost:5000/custom/path/", api_key=api_key, _strict_response_validation=True
             ),
             BespokeLabs(
                 base_url="http://localhost:5000/custom/path/",
-                auth_token=auth_token,
+                api_key=api_key,
                 _strict_response_validation=True,
                 http_client=httpx.Client(),
             ),
@@ -591,11 +601,11 @@ class TestBespokeLabs:
         "client",
         [
             BespokeLabs(
-                base_url="http://localhost:5000/custom/path/", auth_token=auth_token, _strict_response_validation=True
+                base_url="http://localhost:5000/custom/path/", api_key=api_key, _strict_response_validation=True
             ),
             BespokeLabs(
                 base_url="http://localhost:5000/custom/path/",
-                auth_token=auth_token,
+                api_key=api_key,
                 _strict_response_validation=True,
                 http_client=httpx.Client(),
             ),
@@ -616,11 +626,11 @@ class TestBespokeLabs:
         "client",
         [
             BespokeLabs(
-                base_url="http://localhost:5000/custom/path/", auth_token=auth_token, _strict_response_validation=True
+                base_url="http://localhost:5000/custom/path/", api_key=api_key, _strict_response_validation=True
             ),
             BespokeLabs(
                 base_url="http://localhost:5000/custom/path/",
-                auth_token=auth_token,
+                api_key=api_key,
                 _strict_response_validation=True,
                 http_client=httpx.Client(),
             ),
@@ -638,7 +648,7 @@ class TestBespokeLabs:
         assert request.url == "https://myapi.com/foo"
 
     def test_copied_client_does_not_close_http(self) -> None:
-        client = BespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=True)
+        client = BespokeLabs(base_url=base_url, api_key=api_key, _strict_response_validation=True)
         assert not client.is_closed()
 
         copied = client.copy()
@@ -649,7 +659,7 @@ class TestBespokeLabs:
         assert not client.is_closed()
 
     def test_client_context_manager(self) -> None:
-        client = BespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=True)
+        client = BespokeLabs(base_url=base_url, api_key=api_key, _strict_response_validation=True)
         with client as c2:
             assert c2 is client
             assert not c2.is_closed()
@@ -671,7 +681,7 @@ class TestBespokeLabs:
     def test_client_max_retries_validation(self) -> None:
         with pytest.raises(TypeError, match=r"max_retries cannot be None"):
             BespokeLabs(
-                base_url=base_url, auth_token=auth_token, _strict_response_validation=True, max_retries=cast(Any, None)
+                base_url=base_url, api_key=api_key, _strict_response_validation=True, max_retries=cast(Any, None)
             )
 
     @pytest.mark.respx(base_url=base_url)
@@ -681,12 +691,12 @@ class TestBespokeLabs:
 
         respx_mock.get("/foo").mock(return_value=httpx.Response(200, text="my-custom-format"))
 
-        strict_client = BespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=True)
+        strict_client = BespokeLabs(base_url=base_url, api_key=api_key, _strict_response_validation=True)
 
         with pytest.raises(APIResponseValidationError):
             strict_client.get("/foo", cast_to=Model)
 
-        client = BespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=False)
+        client = BespokeLabs(base_url=base_url, api_key=api_key, _strict_response_validation=False)
 
         response = client.get("/foo", cast_to=Model)
         assert isinstance(response, str)  # type: ignore[unreachable]
@@ -714,7 +724,7 @@ class TestBespokeLabs:
     )
     @mock.patch("time.time", mock.MagicMock(return_value=1696004797))
     def test_parse_retry_after_header(self, remaining_retries: int, retry_after: str, timeout: float) -> None:
-        client = BespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=True)
+        client = BespokeLabs(base_url=base_url, api_key=api_key, _strict_response_validation=True)
 
         headers = httpx.Headers({"retry-after": retry_after})
         options = FinalRequestOptions(method="get", url="/foo", max_retries=3)
@@ -834,7 +844,7 @@ class TestBespokeLabs:
 
 
 class TestAsyncBespokeLabs:
-    client = AsyncBespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=True)
+    client = AsyncBespokeLabs(base_url=base_url, api_key=api_key, _strict_response_validation=True)
 
     @pytest.mark.respx(base_url=base_url)
     @pytest.mark.asyncio
@@ -862,9 +872,11 @@ class TestAsyncBespokeLabs:
         copied = self.client.copy()
         assert id(copied) != id(self.client)
 
-        copied = self.client.copy(auth_token="another My Auth Token")
-        assert copied.auth_token == "another My Auth Token"
-        assert self.client.auth_token == "My Auth Token"
+        copied = self.client.copy(api_key="another My API Key")
+        assert copied.api_key == "another My API Key"
+        assert self.client.api_key == "My API Key"
+        assert copied.auth_headers == {"api_key": "another My API Key"}
+        assert self.client.with_options(api_key="override-key").auth_headers == {"api_key": "override-key"}
 
     def test_copy_default_options(self) -> None:
         # options that have a default are overridden correctly
@@ -884,7 +896,7 @@ class TestAsyncBespokeLabs:
 
     def test_copy_default_headers(self) -> None:
         client = AsyncBespokeLabs(
-            base_url=base_url, auth_token=auth_token, _strict_response_validation=True, default_headers={"X-Foo": "bar"}
+            base_url=base_url, api_key=api_key, _strict_response_validation=True, default_headers={"X-Foo": "bar"}
         )
         assert client.default_headers["X-Foo"] == "bar"
 
@@ -918,7 +930,7 @@ class TestAsyncBespokeLabs:
 
     def test_copy_default_query(self) -> None:
         client = AsyncBespokeLabs(
-            base_url=base_url, auth_token=auth_token, _strict_response_validation=True, default_query={"foo": "bar"}
+            base_url=base_url, api_key=api_key, _strict_response_validation=True, default_query={"foo": "bar"}
         )
         assert _get_params(client)["foo"] == "bar"
 
@@ -1043,7 +1055,7 @@ class TestAsyncBespokeLabs:
 
     async def test_client_timeout_option(self) -> None:
         client = AsyncBespokeLabs(
-            base_url=base_url, auth_token=auth_token, _strict_response_validation=True, timeout=httpx.Timeout(0)
+            base_url=base_url, api_key=api_key, _strict_response_validation=True, timeout=httpx.Timeout(0)
         )
 
         request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
@@ -1054,7 +1066,7 @@ class TestAsyncBespokeLabs:
         # custom timeout given to the httpx client should be used
         async with httpx.AsyncClient(timeout=None) as http_client:
             client = AsyncBespokeLabs(
-                base_url=base_url, auth_token=auth_token, _strict_response_validation=True, http_client=http_client
+                base_url=base_url, api_key=api_key, _strict_response_validation=True, http_client=http_client
             )
 
             request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
@@ -1064,7 +1076,7 @@ class TestAsyncBespokeLabs:
         # no timeout given to the httpx client should not use the httpx default
         async with httpx.AsyncClient() as http_client:
             client = AsyncBespokeLabs(
-                base_url=base_url, auth_token=auth_token, _strict_response_validation=True, http_client=http_client
+                base_url=base_url, api_key=api_key, _strict_response_validation=True, http_client=http_client
             )
 
             request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
@@ -1074,7 +1086,7 @@ class TestAsyncBespokeLabs:
         # explicitly passing the default timeout currently results in it being ignored
         async with httpx.AsyncClient(timeout=HTTPX_DEFAULT_TIMEOUT) as http_client:
             client = AsyncBespokeLabs(
-                base_url=base_url, auth_token=auth_token, _strict_response_validation=True, http_client=http_client
+                base_url=base_url, api_key=api_key, _strict_response_validation=True, http_client=http_client
             )
 
             request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
@@ -1086,14 +1098,14 @@ class TestAsyncBespokeLabs:
             with httpx.Client() as http_client:
                 AsyncBespokeLabs(
                     base_url=base_url,
-                    auth_token=auth_token,
+                    api_key=api_key,
                     _strict_response_validation=True,
                     http_client=cast(Any, http_client),
                 )
 
     def test_default_headers_option(self) -> None:
         client = AsyncBespokeLabs(
-            base_url=base_url, auth_token=auth_token, _strict_response_validation=True, default_headers={"X-Foo": "bar"}
+            base_url=base_url, api_key=api_key, _strict_response_validation=True, default_headers={"X-Foo": "bar"}
         )
         request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
         assert request.headers.get("x-foo") == "bar"
@@ -1101,7 +1113,7 @@ class TestAsyncBespokeLabs:
 
         client2 = AsyncBespokeLabs(
             base_url=base_url,
-            auth_token=auth_token,
+            api_key=api_key,
             _strict_response_validation=True,
             default_headers={
                 "X-Foo": "stainless",
@@ -1113,19 +1125,27 @@ class TestAsyncBespokeLabs:
         assert request.headers.get("x-stainless-lang") == "my-overriding-header"
 
     def test_validate_headers(self) -> None:
-        client = AsyncBespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=True)
+        client = AsyncBespokeLabs(base_url=base_url, api_key=api_key, _strict_response_validation=True)
         request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
-        assert request.headers.get("api_key") == auth_token
+        assert request.headers.get("api_key") == api_key
 
-        with pytest.raises(BespokeLabsError):
+        with pytest.raises(BespokeLabsError, match="api_key client option"):
             with update_env(**{"BESPOKE_API_KEY": Omit()}):
-                client2 = AsyncBespokeLabs(base_url=base_url, auth_token=None, _strict_response_validation=True)
+                client2 = AsyncBespokeLabs(base_url=base_url, api_key=None, _strict_response_validation=True)
             _ = client2
+
+    async def test_api_key_environment_and_override(self) -> None:
+        with update_env(BESPOKE_API_KEY="environment-key"):
+            async with AsyncBespokeLabs() as inferred, AsyncBespokeLabs(api_key="explicit-key") as explicit:
+                assert inferred.api_key == "environment-key"
+                assert inferred.auth_headers == {"api_key": "environment-key"}
+                assert explicit.api_key == "explicit-key"
+                assert explicit.auth_headers == {"api_key": "explicit-key"}
 
     def test_default_query_option(self) -> None:
         client = AsyncBespokeLabs(
             base_url=base_url,
-            auth_token=auth_token,
+            api_key=api_key,
             _strict_response_validation=True,
             default_query={"query_param": "bar"},
         )
@@ -1328,7 +1348,7 @@ class TestAsyncBespokeLabs:
 
     def test_base_url_setter(self) -> None:
         client = AsyncBespokeLabs(
-            base_url="https://example.com/from_init", auth_token=auth_token, _strict_response_validation=True
+            base_url="https://example.com/from_init", api_key=api_key, _strict_response_validation=True
         )
         assert client.base_url == "https://example.com/from_init/"
 
@@ -1338,18 +1358,18 @@ class TestAsyncBespokeLabs:
 
     def test_base_url_env(self) -> None:
         with update_env(BESPOKE_LABS_BASE_URL="http://localhost:5000/from/env"):
-            client = AsyncBespokeLabs(auth_token=auth_token, _strict_response_validation=True)
+            client = AsyncBespokeLabs(api_key=api_key, _strict_response_validation=True)
             assert client.base_url == "http://localhost:5000/from/env/"
 
     @pytest.mark.parametrize(
         "client",
         [
             AsyncBespokeLabs(
-                base_url="http://localhost:5000/custom/path/", auth_token=auth_token, _strict_response_validation=True
+                base_url="http://localhost:5000/custom/path/", api_key=api_key, _strict_response_validation=True
             ),
             AsyncBespokeLabs(
                 base_url="http://localhost:5000/custom/path/",
-                auth_token=auth_token,
+                api_key=api_key,
                 _strict_response_validation=True,
                 http_client=httpx.AsyncClient(),
             ),
@@ -1370,11 +1390,11 @@ class TestAsyncBespokeLabs:
         "client",
         [
             AsyncBespokeLabs(
-                base_url="http://localhost:5000/custom/path/", auth_token=auth_token, _strict_response_validation=True
+                base_url="http://localhost:5000/custom/path/", api_key=api_key, _strict_response_validation=True
             ),
             AsyncBespokeLabs(
                 base_url="http://localhost:5000/custom/path/",
-                auth_token=auth_token,
+                api_key=api_key,
                 _strict_response_validation=True,
                 http_client=httpx.AsyncClient(),
             ),
@@ -1395,11 +1415,11 @@ class TestAsyncBespokeLabs:
         "client",
         [
             AsyncBespokeLabs(
-                base_url="http://localhost:5000/custom/path/", auth_token=auth_token, _strict_response_validation=True
+                base_url="http://localhost:5000/custom/path/", api_key=api_key, _strict_response_validation=True
             ),
             AsyncBespokeLabs(
                 base_url="http://localhost:5000/custom/path/",
-                auth_token=auth_token,
+                api_key=api_key,
                 _strict_response_validation=True,
                 http_client=httpx.AsyncClient(),
             ),
@@ -1417,7 +1437,7 @@ class TestAsyncBespokeLabs:
         assert request.url == "https://myapi.com/foo"
 
     async def test_copied_client_does_not_close_http(self) -> None:
-        client = AsyncBespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=True)
+        client = AsyncBespokeLabs(base_url=base_url, api_key=api_key, _strict_response_validation=True)
         assert not client.is_closed()
 
         copied = client.copy()
@@ -1429,7 +1449,7 @@ class TestAsyncBespokeLabs:
         assert not client.is_closed()
 
     async def test_client_context_manager(self) -> None:
-        client = AsyncBespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=True)
+        client = AsyncBespokeLabs(base_url=base_url, api_key=api_key, _strict_response_validation=True)
         async with client as c2:
             assert c2 is client
             assert not c2.is_closed()
@@ -1452,7 +1472,7 @@ class TestAsyncBespokeLabs:
     async def test_client_max_retries_validation(self) -> None:
         with pytest.raises(TypeError, match=r"max_retries cannot be None"):
             AsyncBespokeLabs(
-                base_url=base_url, auth_token=auth_token, _strict_response_validation=True, max_retries=cast(Any, None)
+                base_url=base_url, api_key=api_key, _strict_response_validation=True, max_retries=cast(Any, None)
             )
 
     @pytest.mark.respx(base_url=base_url)
@@ -1463,12 +1483,12 @@ class TestAsyncBespokeLabs:
 
         respx_mock.get("/foo").mock(return_value=httpx.Response(200, text="my-custom-format"))
 
-        strict_client = AsyncBespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=True)
+        strict_client = AsyncBespokeLabs(base_url=base_url, api_key=api_key, _strict_response_validation=True)
 
         with pytest.raises(APIResponseValidationError):
             await strict_client.get("/foo", cast_to=Model)
 
-        client = AsyncBespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=False)
+        client = AsyncBespokeLabs(base_url=base_url, api_key=api_key, _strict_response_validation=False)
 
         response = await client.get("/foo", cast_to=Model)
         assert isinstance(response, str)  # type: ignore[unreachable]
@@ -1497,7 +1517,7 @@ class TestAsyncBespokeLabs:
     @mock.patch("time.time", mock.MagicMock(return_value=1696004797))
     @pytest.mark.asyncio
     async def test_parse_retry_after_header(self, remaining_retries: int, retry_after: str, timeout: float) -> None:
-        client = AsyncBespokeLabs(base_url=base_url, auth_token=auth_token, _strict_response_validation=True)
+        client = AsyncBespokeLabs(base_url=base_url, api_key=api_key, _strict_response_validation=True)
 
         headers = httpx.Headers({"retry-after": retry_after})
         options = FinalRequestOptions(method="get", url="/foo", max_retries=3)
