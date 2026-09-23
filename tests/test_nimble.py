@@ -8,10 +8,10 @@ import httpx
 import pytest
 
 from bespokelabs import BespokeLabs, AsyncBespokeLabs, AuthenticationError, APIResponseValidationError
-from bespokelabs.types.nimble import NoulAnswer, ScoreAnswer, ChoiceAnswer
+from bespokelabs.types.nimble import Question, NoulAnswer, ScoreAnswer, ChoiceAnswer
 
 PAYLOAD = json.loads((Path(__file__).parent / "fixtures/nimble-systemone.json").read_text())
-QUESTIONS = {
+QUESTIONS: dict[str, Question] = {
     "refund": {"type": "noul", "instructions": "Does the customer request a refund?"},
     "department": {
         "type": "choice",
@@ -44,7 +44,7 @@ def assert_answers(result: Any) -> None:
 @pytest.mark.parametrize("surface", ["normal", "raw", "streaming", "client_raw", "client_streaming"])
 def test_sync_nimble(strict: bool, surface: str, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("BESPOKE_API_KEY", "bespoke-test")
-    seen = []
+    seen: list[httpx.Request] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
         seen.append(request)
@@ -115,7 +115,7 @@ async def test_async_nimble(strict: bool, surface: str) -> None:
 
 
 def test_minicheck_and_nimble_share_client() -> None:
-    seen = []
+    seen: list[str] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
         seen.append(request.url.path)
@@ -153,7 +153,7 @@ def test_request_options_and_model_override() -> None:
 
 
 def test_existing_retry_and_authentication_errors() -> None:
-    attempts = []
+    attempts: list[httpx.Request] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
         attempts.append(request)
