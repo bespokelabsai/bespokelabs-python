@@ -15,37 +15,75 @@ The REST API documentation can be found on [docs.bespokelabs.ai](https://docs.be
 ## Installation
 
 ```sh
-# install from PyPI
-pip install bespokelabs
+# install or upgrade from PyPI
+pip install --upgrade bespokelabs
 ```
+
+## Authentication
+
+Set `BESPOKE_API_KEY` in your environment:
+
+```sh
+export BESPOKE_API_KEY="your-api-key"
+```
+
+The SDK reads this variable automatically when you create a client:
+
+```python
+from bespokelabs import BespokeLabs
+
+client = BespokeLabs()
+```
+
+You can also pass a key explicitly with `api_key`:
+
+```python
+from bespokelabs import BespokeLabs
+
+client = BespokeLabs(api_key="your-api-key")
+```
+
+The same options work with `AsyncBespokeLabs`. An explicit `api_key` takes
+precedence over `BESPOKE_API_KEY`. Keep real keys out of source control.
+
+If you keep credentials in a `.env` file, install
+[python-dotenv](https://pypi.org/project/python-dotenv/) and load the file before
+creating the client; the SDK does not load `.env` files itself:
+
+```python
+from dotenv import load_dotenv
+from bespokelabs import BespokeLabs
+
+load_dotenv()  # Loads BESPOKE_API_KEY from .env into the environment.
+client = BespokeLabs()
+```
+
+### Upgrading to 0.4.0
+
+Replace `auth_token=` with `api_key=` when constructing a client or calling
+`copy()` or `with_options()`. Replace `client.auth_token` with `client.api_key`.
+The `BESPOKE_API_KEY` environment variable and HTTP authentication header are
+unchanged, so clients configured solely through the environment need no changes.
 
 ## Usage
 
 The full API of this library can be found in [api.md](api.md).
 
 ```python
-import os
 from bespokelabs import BespokeLabs
 
-client = BespokeLabs(
-    api_key=os.environ.get("BESPOKE_API_KEY"),  # This is the default and can be omitted
-)
+client = BespokeLabs()  # Reads BESPOKE_API_KEY from the environment.
 
-factcheck = client.minicheck.factcheck.create(
-    claim="claim",
-    context="context",
+result = client.nimble.system_one(
+    state="Please refund the duplicate payment.",
+    questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
 )
-print(factcheck.support_prob)
+print(result.nouls["refund"].noul)
 ```
-
-While you can provide an `api_key` keyword argument,
-we recommend using [python-dotenv](https://pypi.org/project/python-dotenv/)
-to add `BESPOKE_API_KEY="My API Key"` to your `.env` file
-so that your API key is not stored in source control.
 
 ## Nimble
 
-Nimble is available through the same client and `BESPOKE_API_KEY` as MiniCheck:
+Use Nimble to answer structured questions about text with Noul, Choice, and Score outputs:
 
 ```python
 from bespokelabs import BespokeLabs
@@ -114,21 +152,18 @@ use the SDK's configured retry policy.
 Simply import `AsyncBespokeLabs` instead of `BespokeLabs` and use `await` with each API call:
 
 ```python
-import os
 import asyncio
 from bespokelabs import AsyncBespokeLabs
 
-client = AsyncBespokeLabs(
-    api_key=os.environ.get("BESPOKE_API_KEY"),  # This is the default and can be omitted
-)
+client = AsyncBespokeLabs()  # Reads BESPOKE_API_KEY from the environment.
 
 
 async def main() -> None:
-    factcheck = await client.minicheck.factcheck.create(
-        claim="claim",
-        context="context",
+    result = await client.nimble.system_one(
+        state="Please refund the duplicate payment.",
+        questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
     )
-    print(factcheck.support_prob)
+    print(result.nouls["refund"].noul)
 
 
 asyncio.run(main())
@@ -161,9 +196,9 @@ from bespokelabs import BespokeLabs
 client = BespokeLabs()
 
 try:
-    client.minicheck.factcheck.create(
-        claim="claim",
-        context="context",
+    client.nimble.system_one(
+        state="Please refund the duplicate payment.",
+        questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
     )
 except bespokelabs.APIConnectionError as e:
     print("The server could not be reached")
@@ -207,9 +242,9 @@ client = BespokeLabs(
 )
 
 # Or, configure per-request:
-client.with_options(max_retries=5).minicheck.factcheck.create(
-    claim="claim",
-    context="context",
+client.with_options(max_retries=5).nimble.system_one(
+    state="Please refund the duplicate payment.",
+    questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
 )
 ```
 
@@ -219,6 +254,7 @@ By default requests time out after 1 minute. You can configure this with a `time
 which accepts a float or an [`httpx.Timeout`](https://www.python-httpx.org/advanced/#fine-tuning-the-configuration) object:
 
 ```python
+import httpx
 from bespokelabs import BespokeLabs
 
 # Configure the default for all requests:
@@ -233,9 +269,9 @@ client = BespokeLabs(
 )
 
 # Override per-request:
-client.with_options(timeout=5.0).minicheck.factcheck.create(
-    claim="claim",
-    context="context",
+client.with_options(timeout=5.0).nimble.system_one(
+    state="Please refund the duplicate payment.",
+    questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
 )
 ```
 
@@ -277,14 +313,14 @@ The "raw" Response object can be accessed by prefixing `.with_raw_response.` to 
 from bespokelabs import BespokeLabs
 
 client = BespokeLabs()
-response = client.minicheck.factcheck.with_raw_response.create(
-    claim="claim",
-    context="context",
+response = client.nimble.with_raw_response.system_one(
+    state="Please refund the duplicate payment.",
+    questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
 )
 print(response.headers.get('X-My-Header'))
 
-factcheck = response.parse()  # get the object that `minicheck.factcheck.create()` would have returned
-print(factcheck.support_prob)
+result = response.parse()  # get the object that `nimble.system_one()` would have returned
+print(result.nouls["refund"].noul)
 ```
 
 These methods return an [`APIResponse`](https://github.com/bespokelabsai/bespokelabs-python/tree/main/src/bespokelabs/_response.py) object.
@@ -298,9 +334,9 @@ The above interface eagerly reads the full response body when you make the reque
 To stream the response body, use `.with_streaming_response` instead, which requires a context manager and only reads the response body once you call `.read()`, `.text()`, `.json()`, `.iter_bytes()`, `.iter_text()`, `.iter_lines()` or `.parse()`. In the async client, these are async methods.
 
 ```python
-with client.minicheck.factcheck.with_streaming_response.create(
-    claim="claim",
-    context="context",
+with client.nimble.with_streaming_response.system_one(
+    state="Please refund the duplicate payment.",
+    questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
 ) as response:
     print(response.headers.get("X-My-Header"))
 
