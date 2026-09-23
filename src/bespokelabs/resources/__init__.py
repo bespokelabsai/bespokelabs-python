@@ -17,3 +17,21 @@ __all__ = [
     "MinicheckResourceWithStreamingResponse",
     "AsyncMinicheckResourceWithStreamingResponse",
 ]
+
+from .nimble import (
+    NimbleResource,
+    AsyncNimbleResource,
+    NimbleResourceWithRawResponse,
+    AsyncNimbleResourceWithRawResponse,
+    NimbleResourceWithStreamingResponse,
+    AsyncNimbleResourceWithStreamingResponse,
+)
+
+__all__ += [
+    "NimbleResource",
+    "AsyncNimbleResource",
+    "NimbleResourceWithRawResponse",
+    "AsyncNimbleResourceWithRawResponse",
+    "NimbleResourceWithStreamingResponse",
+    "AsyncNimbleResourceWithStreamingResponse",
+]

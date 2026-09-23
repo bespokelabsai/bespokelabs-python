@@ -24,6 +24,7 @@ from ._utils import (
     get_async_library,
 )
 from ._version import __version__
+from .resources import nimble
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
 from ._exceptions import APIStatusError, BespokeLabsError
 from ._base_client import (
@@ -46,6 +47,7 @@ __all__ = [
 
 
 class BespokeLabs(SyncAPIClient):
+    nimble: nimble.NimbleResource
     minicheck: minicheck.MinicheckResource
     with_raw_response: BespokeLabsWithRawResponse
     with_streaming_response: BespokeLabsWithStreamedResponse
@@ -104,6 +106,7 @@ class BespokeLabs(SyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
+        self.nimble = nimble.NimbleResource(self)
         self.minicheck = minicheck.MinicheckResource(self)
         self.with_raw_response = BespokeLabsWithRawResponse(self)
         self.with_streaming_response = BespokeLabsWithStreamedResponse(self)
@@ -214,6 +217,7 @@ class BespokeLabs(SyncAPIClient):
 
 
 class AsyncBespokeLabs(AsyncAPIClient):
+    nimble: nimble.AsyncNimbleResource
     minicheck: minicheck.AsyncMinicheckResource
     with_raw_response: AsyncBespokeLabsWithRawResponse
     with_streaming_response: AsyncBespokeLabsWithStreamedResponse
@@ -272,6 +276,7 @@ class AsyncBespokeLabs(AsyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
+        self.nimble = nimble.AsyncNimbleResource(self)
         self.minicheck = minicheck.AsyncMinicheckResource(self)
         self.with_raw_response = AsyncBespokeLabsWithRawResponse(self)
         self.with_streaming_response = AsyncBespokeLabsWithStreamedResponse(self)
@@ -383,21 +388,25 @@ class AsyncBespokeLabs(AsyncAPIClient):
 
 class BespokeLabsWithRawResponse:
     def __init__(self, client: BespokeLabs) -> None:
+        self.nimble = nimble.NimbleResourceWithRawResponse(client.nimble)
         self.minicheck = minicheck.MinicheckResourceWithRawResponse(client.minicheck)
 
 
 class AsyncBespokeLabsWithRawResponse:
     def __init__(self, client: AsyncBespokeLabs) -> None:
+        self.nimble = nimble.AsyncNimbleResourceWithRawResponse(client.nimble)
         self.minicheck = minicheck.AsyncMinicheckResourceWithRawResponse(client.minicheck)
 
 
 class BespokeLabsWithStreamedResponse:
     def __init__(self, client: BespokeLabs) -> None:
+        self.nimble = nimble.NimbleResourceWithStreamingResponse(client.nimble)
         self.minicheck = minicheck.MinicheckResourceWithStreamingResponse(client.minicheck)
 
 
 class AsyncBespokeLabsWithStreamedResponse:
     def __init__(self, client: AsyncBespokeLabs) -> None:
+        self.nimble = nimble.AsyncNimbleResourceWithStreamingResponse(client.nimble)
         self.minicheck = minicheck.AsyncMinicheckResourceWithStreamingResponse(client.minicheck)
 
 

@@ -1,0 +1,37 @@
+{
+  "model": "nimble-latest",
+  "answers": {
+    "refund": {
+      "type": "noul",
+      "noul": 0.9994472214030169
+    },
+    "department": {
+      "type": "choice",
+      "choice": "billing",
+      "probabilities": {
+        "billing": 0.9986749773985448,
+        "technical": 0.001325022601455207
+      },
+      "confidence": 0.9854227557239629
+    },
+    "urgency": {
+      "type": "score",
+      "score": 0.0025241659085396386,
+      "legend": {
+        "0": "Routine billing request; service works",
+        "1": "Some functionality unavailable",
+        "2": "Complete service outage"
+      },
+      "probabilities": {
+        "0": 0.9975016375718438,
+        "1": 0.0024725589477726873,
+        "2": 2.5803480383475674e-05
+      },
+      "confidence": 0.9839712407436262
+    }
+  },
+  "usage": {
+    "input_tokens": 1289,
+    "output_tokens": 4
+  }
+}

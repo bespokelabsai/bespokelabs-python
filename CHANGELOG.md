@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0 (2026-09-22)
+
+- Add synchronous and asynchronous `client.nimble.system_one` with typed Noul, Choice, and Score answers.
+- Reuse Bespoke API authentication, request options, retries, and raw/streaming response wrappers.
+
 ## 0.2.3 (2025-01-09)
 
 Full Changelog: [v0.2.2...v0.2.3](https://github.com/bespokelabsai/bespokelabs-python/compare/v0.2.2...v0.2.3)
