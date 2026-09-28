@@ -28,5 +28,5 @@ Methods:
 - `client.nimble.system_one(state=..., questions=..., model="nimble-latest") -> SystemOneResponse`
 - `await async_client.nimble.system_one(state=..., questions=..., model="nimble-latest") -> SystemOneResponse`
 
-Both call `POST /v1/systemone` and accept `extra_headers`, `extra_query`, `extra_body`,
+Both call `POST /v1/nimble/systemone` and accept `extra_headers`, `extra_query`, `extra_body`,
 and `timeout`. Raw-response and streaming-response variants follow the standard SDK interface.

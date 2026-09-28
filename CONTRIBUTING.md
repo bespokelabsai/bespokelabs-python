@@ -140,8 +140,7 @@ the environment.
 
 The Nimble resource is a handwritten extension of the existing generated SDK. It uses the
 same base client. This repository now builds the `bespokelabs-nimble` distribution.
-The gateway contract lives at `POST /v1/systemone`, as defined by Gaia's
-`apigateway/routers/nimble.py`. The SDK sends all questions in one request to that route.
+The gateway contract lives at `POST /v1/nimble/systemone` (operation ID `nimble_system_one`).
 Before regenerating with Stainless, add this operation and its question/answer schemas to
 the upstream OpenAPI input, or preserve the Nimble resource, types, and `_client.py` wiring.
 This checkout does not contain the upstream Stainless configuration. Before regenerating,
