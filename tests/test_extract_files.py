@@ -4,8 +4,8 @@ from typing import Sequence
 
 import pytest
 
-from bespokelabs._types import FileTypes
-from bespokelabs._utils import extract_files
+from bespokelabs.nimble._types import FileTypes
+from bespokelabs.nimble._utils import extract_files
 
 
 def test_removes_files_from_input() -> None:

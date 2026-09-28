@@ -1,6 +1,6 @@
 """Set BESPOKE_API_KEY; optionally set BESPOKE_LABS_BASE_URL to your gateway."""
 
-from bespokelabs import BespokeLabs
+from bespokelabs.nimble import BespokeLabs
 
 with BespokeLabs() as client:
     response = client.nimble.system_one(

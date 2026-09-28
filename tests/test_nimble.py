@@ -7,8 +7,8 @@ from pathlib import Path
 import httpx
 import pytest
 
-from bespokelabs import BespokeLabs, AsyncBespokeLabs, AuthenticationError, APIResponseValidationError
-from bespokelabs.types.nimble import Question, NoulAnswer, ScoreAnswer, ChoiceAnswer
+from bespokelabs.nimble import BespokeLabs, AsyncBespokeLabs, AuthenticationError, APIResponseValidationError
+from bespokelabs.nimble.types.nimble import Question, NoulAnswer, ScoreAnswer, ChoiceAnswer
 
 PAYLOAD = json.loads((Path(__file__).parent / "fixtures/nimble-systemone.json").read_text())
 QUESTIONS: dict[str, Question] = {

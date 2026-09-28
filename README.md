@@ -1,8 +1,8 @@
-# Bespoke Labs Python API library
+# Bespoke Nimble Python API library
 
-[![PyPI version](https://img.shields.io/pypi/v/bespokelabs.svg)](https://pypi.org/project/bespokelabs/)
+[![PyPI version](https://img.shields.io/pypi/v/bespokelabs-nimble.svg)](https://pypi.org/project/bespokelabs-nimble/)
 
-The Bespoke Labs Python library provides convenient access to the Bespoke Labs REST API from any Python 3.8+
+The Bespoke Nimble Python library provides convenient access to the Bespoke Labs REST API from any Python 3.8+
 application. The library includes type definitions for all request params and response fields,
 and offers both synchronous and asynchronous clients powered by [httpx](https://github.com/encode/httpx).
 
@@ -16,8 +16,55 @@ The REST API documentation can be found on [docs.bespokelabs.ai](https://docs.be
 
 ```sh
 # install or upgrade from PyPI
-pip install --upgrade bespokelabs
+pip install --upgrade bespokelabs-nimble
 ```
+
+## Package migration
+
+This checkout prepares the next `bespokelabs-nimble` release. The commands below
+apply once that release is published; PyPI's existing `0.1.0` is the older
+standalone SDK. To try this change before release, install this checkout with
+`pip install .` in a fresh virtual environment.
+
+### From `bespokelabs`
+
+Replace the dependency `bespokelabs` with `bespokelabs-nimble` and update imports:
+
+```python
+# Before
+from bespokelabs import BespokeLabs, AsyncBespokeLabs
+
+# After
+from bespokelabs.nimble import BespokeLabs, AsyncBespokeLabs
+```
+
+Types and exceptions also move under `bespokelabs.nimble`, for example
+`from bespokelabs.nimble.types.nimble import Question` and
+`from bespokelabs.nimble import APIError`.
+Calls such as `client.nimble.system_one(...)` and `client.minicheck.factcheck.create(...)`,
+authentication, and endpoint URLs keep their existing behavior.
+
+Use a fresh virtual environment when migrating an environment that also has
+Curator or Sandbox installed. The old `bespokelabs` distribution shares its root
+`bespokelabs/__init__.py` with those packages; uninstalling it can remove that
+shared file. This SDK now owns only `bespokelabs/nimble/` and does not export
+clients from the shared root.
+
+### From standalone `bespokelabs-nimble==0.1.0`
+
+This is a breaking API migration. Replace `Nimble` / `AsyncNimble` with
+`BespokeLabs` / `AsyncBespokeLabs` from `bespokelabs.nimble`, and replace
+`client.system_one(...)` with `client.nimble.system_one(...)`.
+Use question dictionaries as in the examples below instead of the standalone
+`Noul`, `Choice`, and `Score` constructors.
+
+The client requires `BESPOKE_API_KEY` (or `api_key=`) and defaults to the hosted
+Bespoke gateway. Custom gateways use `BESPOKE_LABS_BASE_URL` (or `base_url=`)
+and must expose `/v1/nimble/systemone`; a standalone model server exposing
+`/v1/systemone` is not interchangeable. `health()`, `models()`, and `limits()`
+from the standalone SDK are not provided by this client. Applications that
+still need that interface should keep `bespokelabs-nimble==0.1.0` pinned until
+they migrate.
 
 ## Authentication
 
@@ -30,7 +77,7 @@ export BESPOKE_API_KEY="your-api-key"
 The SDK reads this variable automatically when you create a client:
 
 ```python
-from bespokelabs import BespokeLabs
+from bespokelabs.nimble import BespokeLabs
 
 client = BespokeLabs()
 ```
@@ -38,7 +85,7 @@ client = BespokeLabs()
 You can also pass a key explicitly with `api_key`:
 
 ```python
-from bespokelabs import BespokeLabs
+from bespokelabs.nimble import BespokeLabs
 
 client = BespokeLabs(api_key="your-api-key")
 ```
@@ -52,7 +99,7 @@ creating the client; the SDK does not load `.env` files itself:
 
 ```python
 from dotenv import load_dotenv
-from bespokelabs import BespokeLabs
+from bespokelabs.nimble import BespokeLabs
 
 load_dotenv()  # Loads BESPOKE_API_KEY from .env into the environment.
 client = BespokeLabs()
@@ -70,7 +117,7 @@ unchanged, so clients configured solely through the environment need no changes.
 The full API of this library can be found in [api.md](api.md).
 
 ```python
-from bespokelabs import BespokeLabs
+from bespokelabs.nimble import BespokeLabs
 
 client = BespokeLabs()  # Reads BESPOKE_API_KEY from the environment.
 
@@ -86,7 +133,7 @@ print(result.nouls["refund"].noul)
 Use Nimble to answer structured questions about text with Noul, Choice, and Score outputs:
 
 ```python
-from bespokelabs import BespokeLabs
+from bespokelabs.nimble import BespokeLabs
 
 with BespokeLabs() as client:
     result = client.nimble.system_one(
@@ -123,12 +170,12 @@ The default model is `nimble-latest`; pass `model=` to select another server-sup
 
 Answers are typed and available through `result.answers`, or through `result.nouls`,
 `result.choices`, and `result.scores`. Question types are exported from
-`bespokelabs.types.nimble`. No separate `bespokelabs-nimble` installation is needed.
+`bespokelabs.nimble.types.nimble`.
 
 The same resource is available on `AsyncBespokeLabs`:
 
 ```python
-from bespokelabs import AsyncBespokeLabs
+from bespokelabs.nimble import AsyncBespokeLabs
 
 async def check_refund():
     async with AsyncBespokeLabs() as client:
@@ -153,7 +200,7 @@ Simply import `AsyncBespokeLabs` instead of `BespokeLabs` and use `await` with e
 
 ```python
 import asyncio
-from bespokelabs import AsyncBespokeLabs
+from bespokelabs.nimble import AsyncBespokeLabs
 
 client = AsyncBespokeLabs()  # Reads BESPOKE_API_KEY from the environment.
 
@@ -182,16 +229,16 @@ Typed requests and responses provide autocomplete and documentation within your 
 
 ## Handling errors
 
-When the library is unable to connect to the API (for example, due to network connection problems or a timeout), a subclass of `bespokelabs.APIConnectionError` is raised.
+When the library is unable to connect to the API (for example, due to network connection problems or a timeout), a subclass of `bespokelabs.nimble.APIConnectionError` is raised.
 
 When the API returns a non-success status code (that is, 4xx or 5xx
-response), a subclass of `bespokelabs.APIStatusError` is raised, containing `status_code` and `response` properties.
+response), a subclass of `bespokelabs.nimble.APIStatusError` is raised, containing `status_code` and `response` properties.
 
-All errors inherit from `bespokelabs.APIError`.
+All errors inherit from `bespokelabs.nimble.APIError`.
 
 ```python
-import bespokelabs
-from bespokelabs import BespokeLabs
+import bespokelabs.nimble
+from bespokelabs.nimble import BespokeLabs
 
 client = BespokeLabs()
 
@@ -200,12 +247,12 @@ try:
         state="Please refund the duplicate payment.",
         questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
     )
-except bespokelabs.APIConnectionError as e:
+except bespokelabs.nimble.APIConnectionError as e:
     print("The server could not be reached")
     print(e.__cause__)  # an underlying Exception, likely raised within httpx.
-except bespokelabs.RateLimitError as e:
+except bespokelabs.nimble.RateLimitError as e:
     print("A 429 status code was received; we should back off a bit.")
-except bespokelabs.APIStatusError as e:
+except bespokelabs.nimble.APIStatusError as e:
     print("Another non-200-range status code was received")
     print(e.status_code)
     print(e.response)
@@ -233,7 +280,7 @@ Connection errors (for example, due to a network connectivity problem), 408 Requ
 You can use the `max_retries` option to configure or disable retry settings:
 
 ```python
-from bespokelabs import BespokeLabs
+from bespokelabs.nimble import BespokeLabs
 
 # Configure the default for all requests:
 client = BespokeLabs(
@@ -255,7 +302,7 @@ which accepts a float or an [`httpx.Timeout`](https://www.python-httpx.org/advan
 
 ```python
 import httpx
-from bespokelabs import BespokeLabs
+from bespokelabs.nimble import BespokeLabs
 
 # Configure the default for all requests:
 client = BespokeLabs(
@@ -310,7 +357,7 @@ if response.my_field is None:
 The "raw" Response object can be accessed by prefixing `.with_raw_response.` to any HTTP method call, e.g.,
 
 ```py
-from bespokelabs import BespokeLabs
+from bespokelabs.nimble import BespokeLabs
 
 client = BespokeLabs()
 response = client.nimble.with_raw_response.system_one(
@@ -323,9 +370,9 @@ result = response.parse()  # get the object that `nimble.system_one()` would hav
 print(result.nouls["refund"].noul)
 ```
 
-These methods return an [`APIResponse`](https://github.com/bespokelabsai/bespokelabs-python/tree/main/src/bespokelabs/_response.py) object.
+These methods return an [`APIResponse`](https://github.com/bespokelabsai/bespokelabs-python/tree/main/src/bespokelabs/nimble/_response.py) object.
 
-The async client returns an [`AsyncAPIResponse`](https://github.com/bespokelabsai/bespokelabs-python/tree/main/src/bespokelabs/_response.py) with the same structure, the only difference being `await`able methods for reading the response content.
+The async client returns an [`AsyncAPIResponse`](https://github.com/bespokelabsai/bespokelabs-python/tree/main/src/bespokelabs/nimble/_response.py) with the same structure, the only difference being `await`able methods for reading the response content.
 
 #### `.with_streaming_response`
 
@@ -391,7 +438,7 @@ You can directly override the [httpx client](https://www.python-httpx.org/api/#c
 
 ```python
 import httpx
-from bespokelabs import BespokeLabs, DefaultHttpxClient
+from bespokelabs.nimble import BespokeLabs, DefaultHttpxClient
 
 client = BespokeLabs(
     # Or use the `BESPOKE_LABS_BASE_URL` env var
@@ -414,7 +461,7 @@ client.with_options(http_client=DefaultHttpxClient(...))
 By default the library closes underlying HTTP connections whenever the client is [garbage collected](https://docs.python.org/3/reference/datamodel.html#object.__del__). You can manually close the client using the `.close()` method if desired, or with a context manager that closes when exiting.
 
 ```py
-from bespokelabs import BespokeLabs
+from bespokelabs.nimble import BespokeLabs
 
 with BespokeLabs() as client:
   # make requests here
@@ -442,8 +489,8 @@ If you've upgraded to the latest version but aren't seeing any new features you 
 You can determine the version that is being used at runtime with:
 
 ```py
-import bespokelabs
-print(bespokelabs.__version__)
+import bespokelabs.nimble
+print(bespokelabs.nimble.__version__)
 ```
 
 ## Requirements

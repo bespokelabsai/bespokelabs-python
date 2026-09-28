@@ -20,12 +20,12 @@ import pytest
 from respx import MockRouter
 from pydantic import ValidationError
 
-from bespokelabs import BespokeLabs, AsyncBespokeLabs, APIResponseValidationError
-from bespokelabs._types import Omit
-from bespokelabs._models import BaseModel, FinalRequestOptions
-from bespokelabs._constants import RAW_RESPONSE_HEADER
-from bespokelabs._exceptions import APIStatusError, APITimeoutError, BespokeLabsError, APIResponseValidationError
-from bespokelabs._base_client import (
+from bespokelabs.nimble import BespokeLabs, AsyncBespokeLabs, APIResponseValidationError
+from bespokelabs.nimble._types import Omit
+from bespokelabs.nimble._models import BaseModel, FinalRequestOptions
+from bespokelabs.nimble._constants import RAW_RESPONSE_HEADER
+from bespokelabs.nimble._exceptions import APIStatusError, APITimeoutError, BespokeLabsError, APIResponseValidationError
+from bespokelabs.nimble._base_client import (
     DEFAULT_TIMEOUT,
     HTTPX_DEFAULT_TIMEOUT,
     BaseClient,
@@ -231,10 +231,10 @@ class TestBespokeLabs:
                         # to_raw_response_wrapper leaks through the @functools.wraps() decorator.
                         #
                         # removing the decorator fixes the leak for reasons we don't understand.
-                        "bespokelabs/_legacy_response.py",
-                        "bespokelabs/_response.py",
+                        "bespokelabs/nimble/_legacy_response.py",
+                        "bespokelabs/nimble/_response.py",
                         # pydantic.BaseModel.model_dump || pydantic.BaseModel.dict leak memory for some reason.
-                        "bespokelabs/_compat.py",
+                        "bespokelabs/nimble/_compat.py",
                         # Standard library leaks we don't care about.
                         "/logging/__init__.py",
                     ]
@@ -731,7 +731,7 @@ class TestBespokeLabs:
         calculated = client._calculate_retry_timeout(remaining_retries, options, headers)
         assert calculated == pytest.approx(timeout, 0.5 * 0.875)  # pyright: ignore[reportUnknownMemberType]
 
-    @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @mock.patch("bespokelabs.nimble._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     def test_retrying_timeout_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
         respx_mock.post("/v0/minicheck/factcheck").mock(side_effect=httpx.TimeoutException("Test timeout error"))
@@ -746,7 +746,7 @@ class TestBespokeLabs:
 
         assert _get_open_connections(self.client) == 0
 
-    @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @mock.patch("bespokelabs.nimble._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
         respx_mock.post("/v0/minicheck/factcheck").mock(return_value=httpx.Response(500))
@@ -762,7 +762,7 @@ class TestBespokeLabs:
         assert _get_open_connections(self.client) == 0
 
     @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
-    @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @mock.patch("bespokelabs.nimble._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     @pytest.mark.parametrize("failure_mode", ["status", "exception"])
     def test_retries_taken(
@@ -793,7 +793,7 @@ class TestBespokeLabs:
         assert int(response.http_request.headers.get("x-stainless-retry-count")) == failures_before_success
 
     @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
-    @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @mock.patch("bespokelabs.nimble._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     def test_omit_retry_count_header(
         self, client: BespokeLabs, failures_before_success: int, respx_mock: MockRouter
@@ -818,7 +818,7 @@ class TestBespokeLabs:
         assert len(response.http_request.headers.get_list("x-stainless-retry-count")) == 0
 
     @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
-    @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @mock.patch("bespokelabs.nimble._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     def test_overwrite_retry_count_header(
         self, client: BespokeLabs, failures_before_success: int, respx_mock: MockRouter
@@ -1020,10 +1020,10 @@ class TestAsyncBespokeLabs:
                         # to_raw_response_wrapper leaks through the @functools.wraps() decorator.
                         #
                         # removing the decorator fixes the leak for reasons we don't understand.
-                        "bespokelabs/_legacy_response.py",
-                        "bespokelabs/_response.py",
+                        "bespokelabs/nimble/_legacy_response.py",
+                        "bespokelabs/nimble/_response.py",
                         # pydantic.BaseModel.model_dump || pydantic.BaseModel.dict leak memory for some reason.
-                        "bespokelabs/_compat.py",
+                        "bespokelabs/nimble/_compat.py",
                         # Standard library leaks we don't care about.
                         "/logging/__init__.py",
                     ]
@@ -1524,7 +1524,7 @@ class TestAsyncBespokeLabs:
         calculated = client._calculate_retry_timeout(remaining_retries, options, headers)
         assert calculated == pytest.approx(timeout, 0.5 * 0.875)  # pyright: ignore[reportUnknownMemberType]
 
-    @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @mock.patch("bespokelabs.nimble._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     async def test_retrying_timeout_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
         respx_mock.post("/v0/minicheck/factcheck").mock(side_effect=httpx.TimeoutException("Test timeout error"))
@@ -1539,7 +1539,7 @@ class TestAsyncBespokeLabs:
 
         assert _get_open_connections(self.client) == 0
 
-    @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @mock.patch("bespokelabs.nimble._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     async def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter) -> None:
         respx_mock.post("/v0/minicheck/factcheck").mock(return_value=httpx.Response(500))
@@ -1555,7 +1555,7 @@ class TestAsyncBespokeLabs:
         assert _get_open_connections(self.client) == 0
 
     @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
-    @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @mock.patch("bespokelabs.nimble._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     @pytest.mark.asyncio
     @pytest.mark.parametrize("failure_mode", ["status", "exception"])
@@ -1587,7 +1587,7 @@ class TestAsyncBespokeLabs:
         assert int(response.http_request.headers.get("x-stainless-retry-count")) == failures_before_success
 
     @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
-    @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @mock.patch("bespokelabs.nimble._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     @pytest.mark.asyncio
     async def test_omit_retry_count_header(
@@ -1613,7 +1613,7 @@ class TestAsyncBespokeLabs:
         assert len(response.http_request.headers.get_list("x-stainless-retry-count")) == 0
 
     @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
-    @mock.patch("bespokelabs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
+    @mock.patch("bespokelabs.nimble._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     @pytest.mark.asyncio
     async def test_overwrite_retry_count_header(
@@ -1649,8 +1649,8 @@ class TestAsyncBespokeLabs:
         import nest_asyncio
         import threading
 
-        from bespokelabs._utils import asyncify
-        from bespokelabs._base_client import get_platform 
+        from bespokelabs.nimble._utils import asyncify
+        from bespokelabs.nimble._base_client import get_platform
 
         async def test_main() -> None:
             result = await asyncify(get_platform)()

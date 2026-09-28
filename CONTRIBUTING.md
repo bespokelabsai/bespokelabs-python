@@ -37,7 +37,7 @@ $ pip install -r requirements-dev.lock
 
 Most of the SDK is generated code. Modifications to code will be persisted between generations, but may
 result in merge conflicts between manual patches and changes from the generator. The generator will never
-modify the contents of the `src/bespokelabs/lib/` and `examples/` directories.
+modify the contents of the `src/bespokelabs/nimble/lib/` and `examples/` directories.
 
 ## Adding and running examples
 
@@ -116,6 +116,14 @@ $ ./scripts/format
 
 ## Publishing and releases
 
+The distribution name is `bespokelabs-nimble`; the repository remains
+`bespokelabsai/bespokelabs-python`. Before publishing the first release from
+this repository under that name, make sure the publishing credential has
+access to the existing `bespokelabs-nimble` PyPI project and include the
+breaking migration notes from the README in the release notes. The existing
+`0.1.0` release provides a different standalone client API. Use the release
+pipeline to select the next version; do not overwrite an existing release.
+
 Changes made to this repository via the automated release PR pipeline should publish to PyPI automatically. If
 the changes aren't made through the automated pipeline, you may want to make releases manually.
 
@@ -131,12 +139,21 @@ the environment.
 ## Nimble resource maintenance
 
 The Nimble resource is a handwritten extension of the existing generated SDK. It uses the
-same base client; it does not depend on the standalone `bespokelabs-nimble` package.
+same base client. This repository now builds the `bespokelabs-nimble` distribution.
 The gateway contract lives at `POST /v1/nimble/systemone` (operation ID `nimble_system_one`).
 Before regenerating with Stainless, add this operation and its question/answer schemas to
 the upstream OpenAPI input, or preserve the Nimble resource, types, and `_client.py` wiring.
-This checkout does not contain the upstream Stainless configuration, so no regeneration is
-claimed by this change.
+This checkout does not contain the upstream Stainless configuration. Before regenerating,
+update that configuration to use distribution name `bespokelabs-nimble` and module path
+`bespokelabs.nimble`; generated files must remain under `src/bespokelabs/nimble/`.
+Do not generate `src/bespokelabs/__init__.py` or a root `py.typed` file: the root
+is shared with Curator and Sandbox. No regeneration is claimed by this change.
+
+For testing alongside the current Curator and Sandbox releases, install built wheels
+into the same virtual environment. Those releases still ship a regular root package,
+which can hide this SDK's namespace portion when it is installed from a separate
+editable source directory. A complete transition to editable namespace packages
+also requires removing the root `__init__.py` from those projects.
 
 Offline Nimble tests do not require Prism, API credentials, or a running model:
 
