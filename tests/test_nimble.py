@@ -49,7 +49,7 @@ def test_sync_nimble(strict: bool, surface: str, monkeypatch: pytest.MonkeyPatch
     def handler(request: httpx.Request) -> httpx.Response:
         seen.append(request)
         assert request.method == "POST"
-        assert str(request.url) == "https://gateway.example/v1/nimble/systemone"
+        assert str(request.url) == "https://gateway.example/v1/systemone"
         assert request.headers["api_key"] == "bespoke-test"
         assert "authorization" not in request.headers
         assert json.loads(request.content) == {
@@ -88,8 +88,14 @@ def test_sync_nimble(strict: bool, surface: str, monkeypatch: pytest.MonkeyPatch
 @pytest.mark.parametrize("surface", ["normal", "raw", "streaming", "client_raw", "client_streaming"])
 async def test_async_nimble(strict: bool, surface: str) -> None:
     def handler(request: httpx.Request) -> httpx.Response:
-        assert request.url.path == "/v1/nimble/systemone"
+        assert request.method == "POST"
+        assert str(request.url) == "https://api.bespokelabs.ai/v1/systemone"
         assert request.headers["api_key"] == "bespoke-test"
+        assert json.loads(request.content) == {
+            "model": "nimble-latest",
+            "state": "Refund please",
+            "questions": QUESTIONS,
+        }
         return httpx.Response(200, json=PAYLOAD)
 
     async with AsyncBespokeLabs(
@@ -120,14 +126,14 @@ def test_minicheck_and_nimble_share_client() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         seen.append(request.url.path)
         assert request.headers["api_key"] == "bespoke-test"
-        return httpx.Response(200, json=PAYLOAD if "nimble" in request.url.path else {"support_prob": 0.9})
+        return httpx.Response(200, json=PAYLOAD if request.url.path == "/v1/systemone" else {"support_prob": 0.9})
 
     with BespokeLabs(
         api_key="bespoke-test", http_client=httpx.Client(transport=httpx.MockTransport(handler))
     ) as client:
         assert client.minicheck.factcheck.create(claim="claim", context="context").support_prob == 0.9
         assert_answers(client.nimble.system_one(state="Refund", questions=QUESTIONS))
-    assert seen == ["/v0/minicheck/factcheck", "/v1/nimble/systemone"]
+    assert seen == ["/v0/minicheck/factcheck", "/v1/systemone"]
 
 
 def test_request_options_and_model_override() -> None:

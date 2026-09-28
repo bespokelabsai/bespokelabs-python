@@ -77,7 +77,7 @@ class NimbleResource(SyncAPIResource):
           timeout: Override the client-level default timeout for this request, in seconds
         """
         return self._post(
-            "/v1/nimble/systemone",
+            "/v1/systemone",
             body=maybe_transform(
                 {
                     "state": state,
@@ -145,7 +145,7 @@ class AsyncNimbleResource(AsyncAPIResource):
           timeout: Override the client-level default timeout for this request, in seconds
         """
         return await self._post(
-            "/v1/nimble/systemone",
+            "/v1/systemone",
             body=await async_maybe_transform(
                 {
                     "state": state,

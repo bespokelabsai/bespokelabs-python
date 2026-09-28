@@ -60,8 +60,8 @@ Use question dictionaries as in the examples below instead of the standalone
 
 The client requires `BESPOKE_API_KEY` (or `api_key=`) and defaults to the hosted
 Bespoke gateway. Custom gateways use `BESPOKE_LABS_BASE_URL` (or `base_url=`)
-and must expose `/v1/nimble/systemone`; a standalone model server exposing
-`/v1/systemone` is not interchangeable. `health()`, `models()`, and `limits()`
+and must expose `/v1/systemone`. Set the base URL to the service root, without
+the `/v1/systemone` suffix. `health()`, `models()`, and `limits()`
 from the standalone SDK are not provided by this client. Applications that
 still need that interface should keep `bespokelabs-nimble==0.1.0` pinned until
 they migrate.
@@ -157,9 +157,11 @@ with BespokeLabs() as client:
     print(result.scores["urgency"].score)
 ```
 
-The default client sends `POST /v1/nimble/systemone` to `https://api.bespokelabs.ai`.
+The default client sends `POST /v1/systemone` to `https://api.bespokelabs.ai`,
+matching Gaia's authenticated Nimble route.
 For a custom deployment, set `base_url` or `BESPOKE_LABS_BASE_URL` to a gateway exposing
-the same route. This route differs from a standalone Nimble model server's `/v1/systemone`.
+the same route, using the service root as the base URL. The standalone Nimble model
+server also exposes `/v1/systemone`.
 A custom gateway without the route returns 404; one without a configured model server returns 503.
 
 `Noul` returns the probability of true. `Choice` returns a selected option and the probability
