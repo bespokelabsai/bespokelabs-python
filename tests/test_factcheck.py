@@ -10,11 +10,13 @@ from bespokelabs import nimble
 from bespokelabs.nimble.types import FactcheckResponse
 
 
+@pytest.mark.parametrize("strict", [False, True])
 @pytest.mark.parametrize("count", [1, 3, 64])
 @pytest.mark.parametrize("use_async", [False, True])
-async def test_factcheck_batch(count: int, use_async: bool) -> None:
+async def test_factcheck_batch(count: int, use_async: bool, strict: bool) -> None:
     # Duplicate claims and reverse answer order detect ordering/data-loss bugs.
     claims = ["The sky is blue."] * count
+    probabilities = [0 if i == 0 else 1 if i == count - 1 else i / count for i in range(count)]
     seen: list[httpx.Request] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -38,7 +40,7 @@ async def test_factcheck_batch(count: int, use_async: bool) -> None:
             200,
             json={
                 "model": "custom-model",
-                "answers": {str(i): {"type": "noul", "noul": i / count} for i in reversed(range(count))},
+                "answers": {str(i): {"type": "noul", "noul": probabilities[i]} for i in reversed(range(count))},
                 "usage": {"input_tokens": 100, "output_tokens": count},
                 "request_id": "request-test",
             },
@@ -54,18 +56,22 @@ async def test_factcheck_batch(count: int, use_async: bool) -> None:
     )
     if use_async:
         async with nimble.AsyncNimble(
-            api_key="test", http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler))
+            api_key="test",
+            _strict_response_validation=strict,
+            http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
         ) as client:
             result = await client.with_options(max_retries=0).factcheck(**kwargs)
     else:
         with nimble.Nimble(
-            api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))
+            api_key="test",
+            _strict_response_validation=strict,
+            http_client=httpx.Client(transport=httpx.MockTransport(handler)),
         ) as sync_client:
             result = sync_client.with_options(max_retries=0).factcheck(**kwargs)
     assert len(seen) == 1
     assert isinstance(result, FactcheckResponse)
     assert [item.claim for item in result.results] == claims
-    assert [item.support_prob for item in result.results] == [i / count for i in range(count)]
+    assert [item.support_prob for item in result.results] == probabilities
     assert result.model == "custom-model"
     assert result.request_id == "request-test"
     assert result.usage.input_tokens == 100
@@ -139,3 +145,35 @@ def test_invalid_factcheck_response(answers: dict[str, Any]) -> None:
 def test_client_aliases() -> None:
     assert nimble.Nimble is nimble.BespokeLabs is nimble.Client
     assert nimble.AsyncNimble is nimble.AsyncBespokeLabs is nimble.AsyncClient
+
+
+@pytest.mark.parametrize("use_async", [False, True])
+@pytest.mark.parametrize("strict", [False, True])
+@pytest.mark.parametrize("probability", [True, False, "0.5"])
+async def test_factcheck_rejects_coerced_probabilities(use_async: bool, strict: bool, probability: object) -> None:
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "model": "nimble-latest",
+                "answers": {"0": {"type": "noul", "noul": probability}},
+                "usage": {"input_tokens": 1, "output_tokens": 1},
+            },
+        )
+
+    if use_async:
+        async with nimble.AsyncNimble(
+            api_key="test",
+            _strict_response_validation=strict,
+            http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
+        ) as client:
+            with pytest.raises(ValueError, match="Invalid factcheck response"):
+                await client.factcheck(context="context", claims=["claim"])
+    else:
+        with nimble.Nimble(
+            api_key="test",
+            _strict_response_validation=strict,
+            http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+        ) as sync_client:
+            with pytest.raises(ValueError, match="Invalid factcheck response"):
+                sync_client.factcheck(context="context", claims=["claim"])

@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import math
 
-from .types.nimble import Question, NoulAnswer, SystemOneResponse
+from ._utils import is_mapping
+from ._models import validate_type
+from .types.nimble import Question, SystemOneResponse
 from .types.factcheck_response import Effort, FactcheckResult, FactcheckResponse
 
 
@@ -42,15 +44,17 @@ def prepare_factcheck(*, context: str, claims: list[str], effort: Effort) -> dic
     }
 
 
-def parse_factcheck(*, claims: list[str], response: SystemOneResponse) -> FactcheckResponse:
-    if set(response.answers) != {str(index) for index in range(len(claims))}:
+def parse_factcheck(*, claims: list[str], response: object) -> FactcheckResponse:
+    # Inspect JSON values before model parsing can coerce booleans or strings to floats.
+    answers = response.get("answers") if is_mapping(response) else None
+    if not is_mapping(answers) or set(answers) != {str(index) for index in range(len(claims))}:
         raise ValueError("Invalid factcheck response: expected exactly one answer per claim")
     results: list[FactcheckResult] = []
     for index, claim in enumerate(claims):
-        answer = response.answers[str(index)]
-        if not isinstance(answer, NoulAnswer) or answer.type != "noul":
+        answer = answers[str(index)]
+        if not is_mapping(answer) or answer.get("type") != "noul":
             raise ValueError(f"Invalid factcheck response: expected a Noul answer for claim {index}")
-        probability = getattr(answer, "noul", None)
+        probability = answer.get("noul")
         if (
             isinstance(probability, bool)
             or not isinstance(probability, (int, float))
@@ -59,6 +63,8 @@ def parse_factcheck(*, claims: list[str], response: SystemOneResponse) -> Factch
         ):
             raise ValueError(f"Invalid factcheck response: expected a probability for claim {index}")
         results.append(FactcheckResult(claim=claim, support_prob=probability))
-    return FactcheckResponse(
-        results=results, model=response.model, usage=response.usage, request_id=response.request_id
-    )
+    try:
+        parsed = validate_type(type_=SystemOneResponse, value=response)
+    except ValueError as exc:
+        raise ValueError("Invalid factcheck response: invalid System One response metadata") from exc
+    return FactcheckResponse(results=results, model=parsed.model, usage=parsed.usage, request_id=parsed.request_id)

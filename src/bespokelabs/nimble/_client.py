@@ -160,7 +160,7 @@ class Nimble(SyncAPIClient):
         """
         questions = prepare_factcheck(context=context, claims=claims, effort=effort)
         claims = list(claims)
-        response = self.system_one(
+        response = self.with_raw_response.system_one(
             state=context,
             questions=questions,
             model=model,
@@ -168,7 +168,7 @@ class Nimble(SyncAPIClient):
             extra_query=extra_query,
             timeout=timeout,
         )
-        return parse_factcheck(claims=claims, response=response)
+        return parse_factcheck(claims=claims, response=response.json())
 
     @property
     @override
@@ -381,7 +381,7 @@ class AsyncNimble(AsyncAPIClient):
         questions = prepare_factcheck(context=context, claims=claims, effort=effort)
         # Snapshot input before awaiting so caller mutations cannot change result order.
         claims = list(claims)
-        response = await self.system_one(
+        response = await self.with_raw_response.system_one(
             state=context,
             questions=questions,
             model=model,
@@ -389,7 +389,7 @@ class AsyncNimble(AsyncAPIClient):
             extra_query=extra_query,
             timeout=timeout,
         )
-        return parse_factcheck(claims=claims, response=response)
+        return parse_factcheck(claims=claims, response=await response.json())
 
     @property
     @override

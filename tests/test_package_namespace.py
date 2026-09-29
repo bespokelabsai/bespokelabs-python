@@ -38,6 +38,7 @@ assert nimble.AsyncNimble is AsyncBespokeLabs
 with nimble.Nimble(api_key='test') as client:
     assert callable(client.system_one)
     assert callable(client.factcheck)
+    assert callable(client.nimble.system_one)
 assert callable(AsyncBespokeLabs)
 """
     subprocess.run([sys.executable, "-I", "-c", code], check=True, capture_output=True, text=True)
