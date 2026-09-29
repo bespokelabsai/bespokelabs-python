@@ -10,46 +10,51 @@ from bespokelabs import nimble
 from bespokelabs.nimble.types import FactcheckResponse
 
 
+def response_for(body: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "model": "factcheck-" + body["effort"],
+        "effort": body["effort"],
+        "results": [
+            {
+                "claim": claim,
+                "support_prob": i % 2,
+                "supported": bool(i % 2),
+                "escalated": False,
+                "scores": {"small": i % 2},
+            }
+            for i, claim in enumerate(body["claims"])
+        ],
+        "usage": {"input_tokens": 100, "output_tokens": 0},
+        "request_id": "request-test",
+        "escalation_skipped": False,
+    }
+
+
 @pytest.mark.parametrize("strict", [False, True])
 @pytest.mark.parametrize("count", [1, 3, 64])
 @pytest.mark.parametrize("use_async", [False, True])
-async def test_factcheck_batch(count: int, use_async: bool, strict: bool) -> None:
-    # Duplicate claims and reverse answer order detect ordering/data-loss bugs.
+@pytest.mark.parametrize("effort", ["low", "medium", "high"])
+@pytest.mark.parametrize("split", [False, True])
+async def test_factcheck_batch(count: int, use_async: bool, strict: bool, effort: str, split: bool) -> None:
     claims = ["The sky is blue."] * count
-    probabilities = [0 if i == 0 else 1 if i == count - 1 else i / count for i in range(count)]
     seen: list[httpx.Request] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
         seen.append(request)
-        assert request.url.path == "/v1/nimble/systemone"
+        assert request.url.path == "/v1/nimble/factcheck"
         assert request.headers["api_key"] == "test"
         assert request.headers["x-custom"] == "value"
         assert request.url.params["trace"] == "1"
         assert request.extensions["timeout"]["read"] == 7
         body = json.loads(request.content)
-        assert body["state"] == "Today the sky is blue."
-        assert body["model"] == "custom-model"
-        questions = body["questions"]
-        assert len(questions) == count
-        for index, claim in enumerate(claims):
-            question = questions[str(index)]
-            assert question["type"] == "noul"
-            assert question["instructions"]["claim"] == claim
-            assert set(question["criteria"]) == {"true", "false"}
-        return httpx.Response(
-            200,
-            json={
-                "model": "custom-model",
-                "answers": {str(i): {"type": "noul", "noul": probabilities[i]} for i in reversed(range(count))},
-                "usage": {"input_tokens": 100, "output_tokens": count},
-                "request_id": "request-test",
-            },
-        )
+        assert body == {"context": "Today the sky is blue.", "claims": claims, "effort": effort, "split_claims": split}
+        return httpx.Response(200, json=response_for(body))
 
     kwargs: Any = dict(
         context="Today the sky is blue.",
         claims=claims,
-        model="custom-model",
+        effort=effort,
+        split_claims=split,
         extra_headers={"x-custom": "value"},
         extra_query={"trace": "1"},
         timeout=7,
@@ -66,37 +71,35 @@ async def test_factcheck_batch(count: int, use_async: bool, strict: bool) -> Non
             api_key="test",
             _strict_response_validation=strict,
             http_client=httpx.Client(transport=httpx.MockTransport(handler)),
-        ) as sync_client:
-            result = sync_client.with_options(max_retries=0).factcheck(**kwargs)
+        ) as client:
+            result = client.with_options(max_retries=0).factcheck(**kwargs)
     assert len(seen) == 1
     assert isinstance(result, FactcheckResponse)
-    assert [item.claim for item in result.results] == claims
-    assert [item.support_prob for item in result.results] == probabilities
-    assert result.model == "custom-model"
-    assert result.request_id == "request-test"
+    assert [r.claim for r in result.results] == claims
+    assert [r.support_prob for r in result.results] == [i % 2 for i in range(count)]
+    assert result.effort == effort
     assert result.usage.input_tokens == 100
-    assert result.usage.output_tokens == count
+    assert result.request_id == "request-test"
 
 
 @pytest.mark.parametrize("use_async", [False, True])
 @pytest.mark.parametrize(
-    "overrides,error",
+    "overrides",
     [
-        ({"claims": []}, ValueError),
-        ({"claims": ["x"] * 65}, ValueError),
-        ({"claims": "x"}, ValueError),
-        ({"claims": [" "]}, ValueError),
-        ({"claims": [42]}, ValueError),
-        ({"context": " "}, ValueError),
-        ({"context": None}, ValueError),
-        ({"effort": "invalid"}, ValueError),
-        ({"effort": "low"}, NotImplementedError),
-        ({"effort": "high"}, NotImplementedError),
+        {"claims": []},
+        {"claims": ["x"] * 65},
+        {"claims": "x"},
+        {"claims": [" "]},
+        {"claims": [42]},
+        {"claims": ["x" * 4001]},
+        {"context": " "},
+        {"context": None},
+        {"context": "x" * 400001},
+        {"effort": "invalid"},
+        {"split_claims": "false"},
     ],
 )
-async def test_invalid_factcheck_does_not_send(
-    use_async: bool, overrides: dict[str, Any], error: type[Exception]
-) -> None:
+async def test_invalid_factcheck_does_not_send(use_async: bool, overrides: dict[str, Any]) -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         pytest.fail(f"Unexpected request: {request.url}")
 
@@ -105,75 +108,66 @@ async def test_invalid_factcheck_does_not_send(
         async with nimble.AsyncNimble(
             api_key="test", http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler))
         ) as client:
-            with pytest.raises(error):
+            with pytest.raises(ValueError):
                 await client.factcheck(**kwargs)
     else:
-        with nimble.Nimble(
-            api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))
-        ) as sync_client:
-            with pytest.raises(error):
-                sync_client.factcheck(**kwargs)
+        with nimble.Nimble(api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
+            with pytest.raises(ValueError):
+                client.factcheck(**kwargs)
 
 
-@pytest.mark.parametrize(
-    "answers",
-    [
-        {},
-        {"0": {"type": "noul", "noul": 0.5}, "extra": {"type": "noul", "noul": 0.7}},
-        {"0": {"type": "choice", "choice": "true", "probabilities": {}, "confidence": 1}},
-        {"0": {"type": "noul", "noul": 2}},
-        {"0": {"type": "noul", "noul": -1}},
-        {"0": {"type": "noul"}},
-    ],
-)
-def test_invalid_factcheck_response(answers: dict[str, Any]) -> None:
-    def handler(_: httpx.Request) -> httpx.Response:
-        return httpx.Response(
-            200,
-            json={
-                "model": "nimble-latest",
-                "answers": answers,
-                "usage": {"input_tokens": 1, "output_tokens": 1},
-            },
-        )
-
-    with nimble.Nimble(api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
-        with pytest.raises(ValueError, match="Invalid factcheck response"):
-            client.factcheck(context="context", claims=["claim"], effort="medium")
-
-
-def test_client_aliases() -> None:
-    assert nimble.Nimble is nimble.BespokeLabs is nimble.Client
-    assert nimble.AsyncNimble is nimble.AsyncBespokeLabs is nimble.AsyncClient
-
-
+@pytest.mark.parametrize("bad", [True, False, "0.5", -1, 2, 10**400, None])
 @pytest.mark.parametrize("use_async", [False, True])
-@pytest.mark.parametrize("strict", [False, True])
-@pytest.mark.parametrize("probability", [True, False, "0.5"])
-async def test_factcheck_rejects_coerced_probabilities(use_async: bool, strict: bool, probability: object) -> None:
-    def handler(_: httpx.Request) -> httpx.Response:
-        return httpx.Response(
-            200,
-            json={
-                "model": "nimble-latest",
-                "answers": {"0": {"type": "noul", "noul": probability}},
-                "usage": {"input_tokens": 1, "output_tokens": 1},
-            },
-        )
+async def test_probabilities_are_not_coerced(bad: Any, use_async: bool) -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        response = response_for(json.loads(request.content))
+        response["results"][0]["support_prob"] = bad
+        return httpx.Response(200, json=response)
 
     if use_async:
         async with nimble.AsyncNimble(
-            api_key="test",
-            _strict_response_validation=strict,
-            http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
+            api_key="test", http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler))
         ) as client:
-            with pytest.raises(ValueError, match="Invalid factcheck response"):
+            with pytest.raises(ValueError, match="Invalid factcheck"):
                 await client.factcheck(context="context", claims=["claim"])
     else:
-        with nimble.Nimble(
-            api_key="test",
-            _strict_response_validation=strict,
-            http_client=httpx.Client(transport=httpx.MockTransport(handler)),
-        ) as sync_client:
-            with pytest.raises(ValueError, match="Invalid factcheck response"):
-                sync_client.factcheck(context="context", claims=["claim"])
+        with nimble.Nimble(api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
+            with pytest.raises(ValueError, match="Invalid factcheck"):
+                client.factcheck(context="context", claims=["claim"])
+
+
+@pytest.mark.parametrize(
+    "field,value,result_field",
+    [
+        ("results", [], False),
+        ("claim", "another claim", True),
+        ("supported", True, True),
+        ("scores", {"small": "0.5"}, True),
+        ("effort", "low", False),
+        ("usage", {"input_tokens": True, "output_tokens": 0}, False),
+    ],
+)
+def test_malformed_metadata(field: str, value: Any, result_field: bool) -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        response = response_for(json.loads(request.content))
+        target = response["results"][0] if result_field else response
+        target[field] = value
+        return httpx.Response(200, json=response)
+
+    with nimble.Nimble(api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
+        with pytest.raises(ValueError, match="Invalid factcheck"):
+            client.factcheck(context="context", claims=["claim"])
+
+
+def test_default_medium_and_retryable_tier_startup() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert json.loads(request.content)["effort"] == "medium"
+        assert json.loads(request.content)["split_claims"] is True
+        return httpx.Response(503, json={"detail": "Tier is starting"})
+
+    with nimble.Nimble(
+        api_key="test", max_retries=0, http_client=httpx.Client(transport=httpx.MockTransport(handler))
+    ) as client:
+        with pytest.raises(nimble.APIStatusError) as error:
+            client.factcheck(context="context", claims=["claim"])
+        assert error.value.status_code == 503

@@ -211,24 +211,34 @@ with nimble.Nimble() as client:
         print(result.claim, result.support_prob)
 ```
 
-`factcheck` accepts 1–64 non-empty claims and sends them in **one** request to
-`/v1/nimble/systemone`, sharing the context across Noul questions. Results preserve
-input order and duplicate claims. `support_prob` is the model's probability that
-the context supports the whole claim; it is not a calibrated guarantee of truth.
-The response also includes `model`, `usage`, and `request_id` when available.
+`factcheck` accepts 1–64 non-empty claims, each up to 4,000 characters, against
+up to 400,000 characters of context. It sends one request to
+`/v1/nimble/factcheck`. Results preserve input order and duplicate claims.
+`support_prob` is the probability that the context supports the whole claim;
+it is not a calibrated guarantee of truth. `supported` means the score is above 0.5.
 
-**Effort is partially implemented:** `"medium"` (the default) uses one Noul
-question per claim. `"low"` and `"high"` are reserved and raise
-`NotImplementedError` before any request; the backend currently has no effort
-setting. Other values raise `ValueError`. No extra passes or model changes are
-performed. Non-empty context is required. More than 64 claims must be split
-explicitly by the caller.
+All three effort values are supported:
 
-Use `await client.factcheck(...)` with `AsyncNimble`. Both clients accept `model`,
-`extra_headers`, `extra_query`, and `timeout` on this helper. Raw and streaming
-response access is available through `system_one`; `factcheck` returns a composed
-result. The legacy `client.minicheck.factcheck.create(claim=..., context=...)`
-continues to call the separate MiniCheck endpoint.
+- `"low"`: score with the small fact-checking model.
+- `"medium"` (default): recheck uncertain claims with a larger model.
+- `"high"`: recheck uncertain claims with additional judging and reasoning models.
+
+`split_claims=True` is the default. Each sentence is checked separately and the
+lowest support score is returned for the original claim. Set it to `False` to
+check each claim whole. Medium and high may return `escalated` and per-model
+`scores` for each claim. If the requested tier cannot finish because its additional
+models are starting, the API returns a retryable 503 and does not charge the request.
+
+The response includes `model`, `effort`, `usage`, and `request_id`. Billable input
+counts the original context once and each original claim once, using the service's
+shared tokenizer. Internal splitting, chunking and reasoning do not multiply that
+count; `output_tokens` is zero because the response contains scores, not generated
+text. The selected effort determines the input-token rate.
+
+Use `await client.factcheck(...)` with `AsyncNimble`. Both clients accept
+`extra_headers`, `extra_query`, and `timeout`. The effort selects the model;
+`model` is not an argument to this method. The legacy
+`client.minicheck.factcheck.create(claim=..., context=...)` is unchanged.
 
 ## Async usage
 
