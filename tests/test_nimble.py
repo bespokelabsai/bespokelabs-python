@@ -7,7 +7,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from bespokelabs.nimble import BespokeLabs, AsyncBespokeLabs, AuthenticationError, APIResponseValidationError
+from bespokelabs.nimble import Nimble, AsyncNimble, BespokeLabs, AuthenticationError, APIResponseValidationError
 from bespokelabs.nimble.types.nimble import Question, NoulAnswer, ScoreAnswer, ChoiceAnswer
 
 PAYLOAD = json.loads((Path(__file__).parent / "fixtures/nimble-systemone.json").read_text())
@@ -40,9 +40,10 @@ def assert_answers(result: Any) -> None:
     assert result.usage.output_tokens == 4
 
 
+@pytest.mark.parametrize("direct", [False, True])
 @pytest.mark.parametrize("strict", [False, True])
 @pytest.mark.parametrize("surface", ["normal", "raw", "streaming", "client_raw", "client_streaming"])
-def test_sync_nimble(strict: bool, surface: str, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_sync_nimble(direct: bool, strict: bool, surface: str, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("BESPOKE_API_KEY", "bespoke-test")
     seen: list[httpx.Request] = []
 
@@ -59,23 +60,29 @@ def test_sync_nimble(strict: bool, surface: str, monkeypatch: pytest.MonkeyPatch
         }
         return httpx.Response(200, json=PAYLOAD, headers={"x-request-id": "request-test"})
 
-    with BespokeLabs(
+    with Nimble(
         base_url="https://gateway.example",
         _strict_response_validation=strict,
         http_client=httpx.Client(transport=httpx.MockTransport(handler)),
     ) as client:
-        resource = client.with_options(max_retries=0).nimble
+        resource = client.with_options(max_retries=0) if direct else client.with_options(max_retries=0).nimble
         kwargs: Any = {"state": {"text": "Refund please"}, "questions": QUESTIONS}
         if surface == "normal":
             result = resource.system_one(**kwargs)
         elif surface in {"raw", "client_raw"}:
-            target = resource.with_raw_response if surface == "raw" else client.with_raw_response.nimble
+            target = (
+                resource.with_raw_response
+                if surface == "raw"
+                else (client.with_raw_response if direct else client.with_raw_response.nimble)
+            )
             raw = target.system_one(**kwargs)
             assert raw.headers["x-request-id"] == "request-test"
             result = raw.parse()
         else:
             target = (
-                resource.with_streaming_response if surface == "streaming" else client.with_streaming_response.nimble
+                resource.with_streaming_response
+                if surface == "streaming"
+                else (client.with_streaming_response if direct else client.with_streaming_response.nimble)
             )
             with target.system_one(**kwargs) as raw:
                 result = raw.parse()
@@ -84,9 +91,10 @@ def test_sync_nimble(strict: bool, surface: str, monkeypatch: pytest.MonkeyPatch
     assert len(seen) == 1
 
 
+@pytest.mark.parametrize("direct", [False, True])
 @pytest.mark.parametrize("strict", [False, True])
 @pytest.mark.parametrize("surface", ["normal", "raw", "streaming", "client_raw", "client_streaming"])
-async def test_async_nimble(strict: bool, surface: str) -> None:
+async def test_async_nimble(direct: bool, strict: bool, surface: str) -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.method == "POST"
         assert str(request.url) == "https://api.bespokelabs.ai/v1/nimble/systemone"
@@ -98,21 +106,27 @@ async def test_async_nimble(strict: bool, surface: str) -> None:
         }
         return httpx.Response(200, json=PAYLOAD)
 
-    async with AsyncBespokeLabs(
+    async with AsyncNimble(
         api_key="bespoke-test",
         _strict_response_validation=strict,
         http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
     ) as client:
-        resource = client.with_options(max_retries=0).nimble
+        resource = client.with_options(max_retries=0) if direct else client.with_options(max_retries=0).nimble
         kwargs: Any = {"state": "Refund please", "questions": QUESTIONS}
         if surface == "normal":
             result = await resource.system_one(**kwargs)
         elif surface in {"raw", "client_raw"}:
-            target = resource.with_raw_response if surface == "raw" else client.with_raw_response.nimble
+            target = (
+                resource.with_raw_response
+                if surface == "raw"
+                else (client.with_raw_response if direct else client.with_raw_response.nimble)
+            )
             result = await (await target.system_one(**kwargs)).parse()
         else:
             target = (
-                resource.with_streaming_response if surface == "streaming" else client.with_streaming_response.nimble
+                resource.with_streaming_response
+                if surface == "streaming"
+                else (client.with_streaming_response if direct else client.with_streaming_response.nimble)
             )
             async with target.system_one(**kwargs) as raw:
                 result = await raw.parse()

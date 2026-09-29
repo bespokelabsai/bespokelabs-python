@@ -5,10 +5,12 @@ from ._types import NOT_GIVEN, Omit, NoneType, NotGiven, Transport, ProxiesTypes
 from ._utils import file_from_path
 from ._client import (
     Client,
+    Nimble,
     Stream,
     Timeout,
     Transport,
     AsyncClient,
+    AsyncNimble,
     AsyncStream,
     BespokeLabs,
     RequestOptions,
@@ -63,6 +65,8 @@ __all__ = [
     "InternalServerError",
     "Timeout",
     "RequestOptions",
+    "Nimble",
+    "AsyncNimble",
     "Client",
     "AsyncClient",
     "Stream",

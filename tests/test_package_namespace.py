@@ -25,7 +25,7 @@ def test_separate_namespace_portions(tmp_path: Path, sdk_first: bool) -> None:
 import sys
 sys.path[:0] = {paths!r}
 import bespokelabs
-from bespokelabs import curator, sandbox
+from bespokelabs import curator, sandbox, nimble
 from bespokelabs.nimble import BespokeLabs, AsyncBespokeLabs, APIError
 from bespokelabs.nimble.types.nimble import Question
 
@@ -33,8 +33,11 @@ assert bespokelabs.__file__ is None
 assert curator.NAME == 'curator'
 assert sandbox.NAME == 'sandbox'
 assert APIError.__module__ == 'bespokelabs.nimble'
-with BespokeLabs(api_key='test') as client:
-    assert callable(client.nimble.system_one)
+assert nimble.Nimble is BespokeLabs
+assert nimble.AsyncNimble is AsyncBespokeLabs
+with nimble.Nimble(api_key='test') as client:
+    assert callable(client.system_one)
+    assert callable(client.factcheck)
 assert callable(AsyncBespokeLabs)
 """
     subprocess.run([sys.executable, "-I", "-c", code], check=True, capture_output=True, text=True)

@@ -12,7 +12,10 @@ from . import _exceptions
 from ._qs import Querystring
 from ._types import (
     NOT_GIVEN,
+    Body,
     Omit,
+    Query,
+    Headers,
     Timeout,
     NotGiven,
     Transport,
@@ -25,6 +28,7 @@ from ._utils import (
 )
 from ._version import __version__
 from .resources import nimble
+from ._factcheck import parse_factcheck, prepare_factcheck
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
 from ._exceptions import APIStatusError, BespokeLabsError
 from ._base_client import (
@@ -32,13 +36,17 @@ from ._base_client import (
     SyncAPIClient,
     AsyncAPIClient,
 )
+from .types.nimble import Content, Question, SystemOneResponse
 from .resources.minicheck import minicheck
+from .types.factcheck_response import Effort, FactcheckResponse
 
 __all__ = [
     "Timeout",
     "Transport",
     "ProxiesTypes",
     "RequestOptions",
+    "Nimble",
+    "AsyncNimble",
     "BespokeLabs",
     "AsyncBespokeLabs",
     "Client",
@@ -46,11 +54,11 @@ __all__ = [
 ]
 
 
-class BespokeLabs(SyncAPIClient):
+class Nimble(SyncAPIClient):
     nimble: nimble.NimbleResource
     minicheck: minicheck.MinicheckResource
-    with_raw_response: BespokeLabsWithRawResponse
-    with_streaming_response: BespokeLabsWithStreamedResponse
+    with_raw_response: NimbleWithRawResponse
+    with_streaming_response: NimbleWithStreamedResponse
 
     # client options
     api_key: str
@@ -78,7 +86,7 @@ class BespokeLabs(SyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new synchronous bespoke_labs client instance.
+        """Construct a new synchronous Nimble client instance.
 
         This automatically infers the `api_key` argument from the `BESPOKE_API_KEY` environment variable if it is not provided.
         """
@@ -108,8 +116,59 @@ class BespokeLabs(SyncAPIClient):
 
         self.nimble = nimble.NimbleResource(self)
         self.minicheck = minicheck.MinicheckResource(self)
-        self.with_raw_response = BespokeLabsWithRawResponse(self)
-        self.with_streaming_response = BespokeLabsWithStreamedResponse(self)
+        self.with_raw_response = NimbleWithRawResponse(self)
+        self.with_streaming_response = NimbleWithStreamedResponse(self)
+
+    def system_one(
+        self,
+        *,
+        state: Content,
+        questions: dict[str, Question],
+        model: str = "nimble-latest",
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> SystemOneResponse:
+        """Evaluate up to 64 typed questions against shared state in one request."""
+        return self.nimble.system_one(
+            state=state,
+            questions=questions,
+            model=model,
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            extra_body=extra_body,
+            timeout=timeout,
+        )
+
+    def factcheck(
+        self,
+        *,
+        context: str,
+        claims: list[str],
+        effort: Effort = "medium",
+        model: str = "nimble-latest",
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> FactcheckResponse:
+        """Score 1–64 claims against shared context in one Nimble request.
+
+        Results preserve claim order, including duplicate claims. Medium uses one
+        Noul question per claim. Low and high are reserved and currently raise
+        NotImplementedError because the backend has no effort setting.
+        """
+        questions = prepare_factcheck(context=context, claims=claims, effort=effort)
+        claims = list(claims)
+        response = self.system_one(
+            state=context,
+            questions=questions,
+            model=model,
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+        )
+        return parse_factcheck(claims=claims, response=response)
 
     @property
     @override
@@ -215,11 +274,11 @@ class BespokeLabs(SyncAPIClient):
         return APIStatusError(err_msg, response=response, body=body)
 
 
-class AsyncBespokeLabs(AsyncAPIClient):
+class AsyncNimble(AsyncAPIClient):
     nimble: nimble.AsyncNimbleResource
     minicheck: minicheck.AsyncMinicheckResource
-    with_raw_response: AsyncBespokeLabsWithRawResponse
-    with_streaming_response: AsyncBespokeLabsWithStreamedResponse
+    with_raw_response: AsyncNimbleWithRawResponse
+    with_streaming_response: AsyncNimbleWithStreamedResponse
 
     # client options
     api_key: str
@@ -247,7 +306,7 @@ class AsyncBespokeLabs(AsyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new async bespoke_labs client instance.
+        """Construct a new asynchronous Nimble client instance.
 
         This automatically infers the `api_key` argument from the `BESPOKE_API_KEY` environment variable if it is not provided.
         """
@@ -277,8 +336,60 @@ class AsyncBespokeLabs(AsyncAPIClient):
 
         self.nimble = nimble.AsyncNimbleResource(self)
         self.minicheck = minicheck.AsyncMinicheckResource(self)
-        self.with_raw_response = AsyncBespokeLabsWithRawResponse(self)
-        self.with_streaming_response = AsyncBespokeLabsWithStreamedResponse(self)
+        self.with_raw_response = AsyncNimbleWithRawResponse(self)
+        self.with_streaming_response = AsyncNimbleWithStreamedResponse(self)
+
+    async def system_one(
+        self,
+        *,
+        state: Content,
+        questions: dict[str, Question],
+        model: str = "nimble-latest",
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> SystemOneResponse:
+        """Evaluate up to 64 typed questions against shared state in one request."""
+        return await self.nimble.system_one(
+            state=state,
+            questions=questions,
+            model=model,
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            extra_body=extra_body,
+            timeout=timeout,
+        )
+
+    async def factcheck(
+        self,
+        *,
+        context: str,
+        claims: list[str],
+        effort: Effort = "medium",
+        model: str = "nimble-latest",
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> FactcheckResponse:
+        """Score 1–64 claims against shared context in one Nimble request.
+
+        Results preserve claim order, including duplicate claims. Medium uses one
+        Noul question per claim. Low and high are reserved and currently raise
+        NotImplementedError because the backend has no effort setting.
+        """
+        questions = prepare_factcheck(context=context, claims=claims, effort=effort)
+        # Snapshot input before awaiting so caller mutations cannot change result order.
+        claims = list(claims)
+        response = await self.system_one(
+            state=context,
+            questions=questions,
+            model=model,
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
+        )
+        return parse_factcheck(claims=claims, response=response)
 
     @property
     @override
@@ -384,30 +495,38 @@ class AsyncBespokeLabs(AsyncAPIClient):
         return APIStatusError(err_msg, response=response, body=body)
 
 
-class BespokeLabsWithRawResponse:
-    def __init__(self, client: BespokeLabs) -> None:
+class NimbleWithRawResponse:
+    def __init__(self, client: Nimble) -> None:
         self.nimble = nimble.NimbleResourceWithRawResponse(client.nimble)
+        self.system_one = self.nimble.system_one
         self.minicheck = minicheck.MinicheckResourceWithRawResponse(client.minicheck)
 
 
-class AsyncBespokeLabsWithRawResponse:
-    def __init__(self, client: AsyncBespokeLabs) -> None:
+class AsyncNimbleWithRawResponse:
+    def __init__(self, client: AsyncNimble) -> None:
         self.nimble = nimble.AsyncNimbleResourceWithRawResponse(client.nimble)
+        self.system_one = self.nimble.system_one
         self.minicheck = minicheck.AsyncMinicheckResourceWithRawResponse(client.minicheck)
 
 
-class BespokeLabsWithStreamedResponse:
-    def __init__(self, client: BespokeLabs) -> None:
+class NimbleWithStreamedResponse:
+    def __init__(self, client: Nimble) -> None:
         self.nimble = nimble.NimbleResourceWithStreamingResponse(client.nimble)
+        self.system_one = self.nimble.system_one
         self.minicheck = minicheck.MinicheckResourceWithStreamingResponse(client.minicheck)
 
 
-class AsyncBespokeLabsWithStreamedResponse:
-    def __init__(self, client: AsyncBespokeLabs) -> None:
+class AsyncNimbleWithStreamedResponse:
+    def __init__(self, client: AsyncNimble) -> None:
         self.nimble = nimble.AsyncNimbleResourceWithStreamingResponse(client.nimble)
+        self.system_one = self.nimble.system_one
         self.minicheck = minicheck.AsyncMinicheckResourceWithStreamingResponse(client.minicheck)
 
 
-Client = BespokeLabs
+Client = Nimble
 
-AsyncClient = AsyncBespokeLabs
+AsyncClient = AsyncNimble
+
+# Compatibility aliases for applications using the previous client names.
+BespokeLabs = Nimble
+AsyncBespokeLabs = AsyncNimble

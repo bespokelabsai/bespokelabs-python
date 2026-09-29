@@ -35,14 +35,16 @@ Replace the dependency `bespokelabs` with `bespokelabs-nimble` and update import
 from bespokelabs import BespokeLabs, AsyncBespokeLabs
 
 # After
-from bespokelabs.nimble import BespokeLabs, AsyncBespokeLabs
+from bespokelabs.nimble import Nimble, AsyncNimble
 ```
 
 Types and exceptions also move under `bespokelabs.nimble`, for example
 `from bespokelabs.nimble.types.nimble import Question` and
 `from bespokelabs.nimble import APIError`.
-Calls such as `client.nimble.system_one(...)` and `client.minicheck.factcheck.create(...)`,
-authentication, and endpoint URLs keep their existing behavior.
+Use `client.system_one(...)` for Nimble and `client.factcheck(...)` for batched fact
+checking. `BespokeLabs` / `AsyncBespokeLabs` remain aliases of `Nimble` / `AsyncNimble`.
+The previous `client.nimble.system_one(...)` and
+`client.minicheck.factcheck.create(...)` calls remain available.
 
 Use a fresh virtual environment when migrating an environment that also has
 Curator or Sandbox installed. The old `bespokelabs` distribution shares its root
@@ -52,9 +54,9 @@ clients from the shared root.
 
 ### From standalone `bespokelabs-nimble==0.1.0`
 
-This is a breaking API migration. Replace `Nimble` / `AsyncNimble` with
-`BespokeLabs` / `AsyncBespokeLabs` from `bespokelabs.nimble`, and replace
-`client.system_one(...)` with `client.nimble.system_one(...)`.
+Import `Nimble` / `AsyncNimble` from `bespokelabs.nimble`.
+The direct `client.system_one(...)` method remains available, but authentication
+and question construction differ from the standalone SDK.
 Use question dictionaries as in the examples below instead of the standalone
 `Noul`, `Choice`, and `Score` constructors.
 
@@ -77,20 +79,20 @@ export BESPOKE_API_KEY="your-api-key"
 The SDK reads this variable automatically when you create a client:
 
 ```python
-from bespokelabs.nimble import BespokeLabs
+from bespokelabs.nimble import Nimble
 
-client = BespokeLabs()
+client = Nimble()
 ```
 
 You can also pass a key explicitly with `api_key`:
 
 ```python
-from bespokelabs.nimble import BespokeLabs
+from bespokelabs.nimble import Nimble
 
-client = BespokeLabs(api_key="your-api-key")
+client = Nimble(api_key="your-api-key")
 ```
 
-The same options work with `AsyncBespokeLabs`. An explicit `api_key` takes
+The same options work with `AsyncNimble`. An explicit `api_key` takes
 precedence over `BESPOKE_API_KEY`. Keep real keys out of source control.
 
 If you keep credentials in a `.env` file, install
@@ -99,10 +101,10 @@ creating the client; the SDK does not load `.env` files itself:
 
 ```python
 from dotenv import load_dotenv
-from bespokelabs.nimble import BespokeLabs
+from bespokelabs.nimble import Nimble
 
 load_dotenv()  # Loads BESPOKE_API_KEY from .env into the environment.
-client = BespokeLabs()
+client = Nimble()
 ```
 
 ### Upgrading to 0.4.0
@@ -117,11 +119,11 @@ unchanged, so clients configured solely through the environment need no changes.
 The full API of this library can be found in [api.md](api.md).
 
 ```python
-from bespokelabs.nimble import BespokeLabs
+from bespokelabs import nimble
 
-client = BespokeLabs()  # Reads BESPOKE_API_KEY from the environment.
+client = nimble.Nimble()  # Reads BESPOKE_API_KEY from the environment.
 
-result = client.nimble.system_one(
+result = client.system_one(
     state="Please refund the duplicate payment.",
     questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
 )
@@ -133,10 +135,10 @@ print(result.nouls["refund"].noul)
 Use Nimble to answer structured questions about text with Noul, Choice, and Score outputs:
 
 ```python
-from bespokelabs.nimble import BespokeLabs
+from bespokelabs.nimble import Nimble
 
-with BespokeLabs() as client:
-    result = client.nimble.system_one(
+with Nimble() as client:
+    result = client.system_one(
         state="Please refund the duplicate payment.",
         questions={
             "refund": {"type": "noul", "instructions": "Does the customer request a refund?"},
@@ -172,14 +174,14 @@ Answers are typed and available through `result.answers`, or through `result.nou
 `result.choices`, and `result.scores`. Question types are exported from
 `bespokelabs.nimble.types.nimble`.
 
-The same resource is available on `AsyncBespokeLabs`:
+The same resource is available on `AsyncNimble`:
 
 ```python
-from bespokelabs.nimble import AsyncBespokeLabs
+from bespokelabs.nimble import AsyncNimble
 
 async def check_refund():
-    async with AsyncBespokeLabs() as client:
-        result = await client.nimble.system_one(
+    async with AsyncNimble() as client:
+        result = await client.system_one(
             state="Please refund the duplicate payment.",
             questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
         )
@@ -187,26 +189,60 @@ async def check_refund():
 ```
 
 The standard SDK options work for Nimble, including `with_options`, retries, per-call timeouts,
-`client.nimble.with_raw_response.system_one(...)`, and
-`client.nimble.with_streaming_response.system_one(...)`. Streaming here controls HTTP body
+`client.with_raw_response.system_one(...)`, and
+`client.with_streaming_response.system_one(...)`. Streaming here controls HTTP body
 reading; it does not produce incremental model answers. Increase the request timeout for
 slow responses (for example, `timeout=180.0`). A longer timeout does not make a server wait
 when it immediately returns an overload or startup error such as 503 or 529; those responses
 use the SDK's configured retry policy.
 
+## Fact checking
+
+```python
+from bespokelabs import nimble
+
+with nimble.Nimble() as client:
+    response = client.factcheck(
+        context="Paris is the capital of France.",
+        claims=["France's capital is Paris.", "France's capital is London."],
+        effort="medium",
+    )
+    for result in response.results:
+        print(result.claim, result.support_prob)
+```
+
+`factcheck` accepts 1–64 non-empty claims and sends them in **one** request to
+`/v1/nimble/systemone`, sharing the context across Noul questions. Results preserve
+input order and duplicate claims. `support_prob` is the model's probability that
+the context supports the whole claim; it is not a calibrated guarantee of truth.
+The response also includes `model`, `usage`, and `request_id` when available.
+
+**Effort is partially implemented:** `"medium"` (the default) uses one Noul
+question per claim. `"low"` and `"high"` are reserved and raise
+`NotImplementedError` before any request; the backend currently has no effort
+setting. Other values raise `ValueError`. No extra passes or model changes are
+performed. Non-empty context is required. More than 64 claims must be split
+explicitly by the caller.
+
+Use `await client.factcheck(...)` with `AsyncNimble`. Both clients accept `model`,
+`extra_headers`, `extra_query`, and `timeout` on this helper. Raw and streaming
+response access is available through `system_one`; `factcheck` returns a composed
+result. The legacy `client.minicheck.factcheck.create(claim=..., context=...)`
+continues to call the separate MiniCheck endpoint.
+
 ## Async usage
 
-Simply import `AsyncBespokeLabs` instead of `BespokeLabs` and use `await` with each API call:
+Simply import `AsyncNimble` instead of `Nimble` and use `await` with each API call:
 
 ```python
 import asyncio
-from bespokelabs.nimble import AsyncBespokeLabs
+from bespokelabs.nimble import AsyncNimble
 
-client = AsyncBespokeLabs()  # Reads BESPOKE_API_KEY from the environment.
+client = AsyncNimble()  # Reads BESPOKE_API_KEY from the environment.
 
 
 async def main() -> None:
-    result = await client.nimble.system_one(
+    result = await client.system_one(
         state="Please refund the duplicate payment.",
         questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
     )
@@ -238,12 +274,12 @@ All errors inherit from `bespokelabs.nimble.APIError`.
 
 ```python
 import bespokelabs.nimble
-from bespokelabs.nimble import BespokeLabs
+from bespokelabs.nimble import Nimble
 
-client = BespokeLabs()
+client = Nimble()
 
 try:
-    client.nimble.system_one(
+    client.system_one(
         state="Please refund the duplicate payment.",
         questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
     )
@@ -280,10 +316,10 @@ Connection errors (for example, due to a network connectivity problem), 408 Requ
 You can use the `max_retries` option to configure or disable retry settings:
 
 ```python
-from bespokelabs.nimble import BespokeLabs
+from bespokelabs.nimble import Nimble
 
 # Configure the default for all requests:
-client = BespokeLabs(
+client = Nimble(
     # default is 2
     max_retries=0,
 )
@@ -302,16 +338,16 @@ which accepts a float or an [`httpx.Timeout`](https://www.python-httpx.org/advan
 
 ```python
 import httpx
-from bespokelabs.nimble import BespokeLabs
+from bespokelabs.nimble import Nimble
 
 # Configure the default for all requests:
-client = BespokeLabs(
+client = Nimble(
     # 20 seconds (default is 1 minute)
     timeout=20.0,
 )
 
 # More granular control:
-client = BespokeLabs(
+client = Nimble(
     timeout=httpx.Timeout(60.0, read=5.0, write=10.0, connect=2.0),
 )
 
@@ -357,10 +393,10 @@ if response.my_field is None:
 The "raw" Response object can be accessed by prefixing `.with_raw_response.` to any HTTP method call, e.g.,
 
 ```py
-from bespokelabs.nimble import BespokeLabs
+from bespokelabs.nimble import Nimble
 
-client = BespokeLabs()
-response = client.nimble.with_raw_response.system_one(
+client = Nimble()
+response = client.with_raw_response.system_one(
     state="Please refund the duplicate payment.",
     questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
 )
@@ -381,7 +417,7 @@ The above interface eagerly reads the full response body when you make the reque
 To stream the response body, use `.with_streaming_response` instead, which requires a context manager and only reads the response body once you call `.read()`, `.text()`, `.json()`, `.iter_bytes()`, `.iter_text()`, `.iter_lines()` or `.parse()`. In the async client, these are async methods.
 
 ```python
-with client.nimble.with_streaming_response.system_one(
+with client.with_streaming_response.system_one(
     state="Please refund the duplicate payment.",
     questions={"refund": {"type": "noul", "instructions": "Refund requested?"}},
 ) as response:
@@ -438,9 +474,9 @@ You can directly override the [httpx client](https://www.python-httpx.org/api/#c
 
 ```python
 import httpx
-from bespokelabs.nimble import BespokeLabs, DefaultHttpxClient
+from bespokelabs.nimble import Nimble, DefaultHttpxClient
 
-client = BespokeLabs(
+client = Nimble(
     # Or use the `BESPOKE_LABS_BASE_URL` env var
     base_url="http://my.test.server.example.com:8083",
     http_client=DefaultHttpxClient(
@@ -461,9 +497,9 @@ client.with_options(http_client=DefaultHttpxClient(...))
 By default the library closes underlying HTTP connections whenever the client is [garbage collected](https://docs.python.org/3/reference/datamodel.html#object.__del__). You can manually close the client using the `.close()` method if desired, or with a context manager that closes when exiting.
 
 ```py
-from bespokelabs.nimble import BespokeLabs
+from bespokelabs.nimble import Nimble
 
-with BespokeLabs() as client:
+with Nimble() as client:
   # make requests here
   ...
 
