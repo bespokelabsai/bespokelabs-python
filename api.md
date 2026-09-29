@@ -43,12 +43,13 @@ from bespokelabs.nimble.types import Effort, FactcheckResult, FactcheckResponse
 - `client.factcheck(context=..., claims=[...], effort="medium") -> FactcheckResponse`
 - `await async_client.factcheck(context=..., claims=[...], effort="medium") -> FactcheckResponse`
 
-Fact checking sends 1–64 claims in one `POST /v1/nimble/systemone` request as Noul
-questions with shared context. `results` contains `claim` and `support_prob` for
+Fact checking sends 1–64 claims with shared context in one request. `results` contains `claim` and `support_prob` for
 each input, in input order. The response includes model, usage, and request ID.
-Only `medium` is implemented; `low` and `high` raise `NotImplementedError` pending
-a defined effort strategy. This helper also accepts `model`, `extra_headers`,
-`extra_query`, and `timeout`. It has no raw/streaming variant.
+All three efforts (`low`, `medium`, `high`) call `/v1/nimble/factcheck`.
+`split_claims=True` checks sentences separately and returns the lowest score for
+each original claim. This method accepts `extra_headers`, `extra_query`, and
+`timeout`; the effort selects the model. Results include the selected effort,
+billable input usage, support decisions, and available escalation metadata.
 
 `BespokeLabs` / `AsyncBespokeLabs` and `Client` / `AsyncClient` are compatibility
 aliases. The nested `client.nimble.system_one` interface remains available.

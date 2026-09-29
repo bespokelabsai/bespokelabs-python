@@ -35,6 +35,7 @@ from ._base_client import (
     DEFAULT_MAX_RETRIES,
     SyncAPIClient,
     AsyncAPIClient,
+    make_request_options,
 )
 from .types.nimble import Content, Question, SystemOneResponse
 from .resources.minicheck import minicheck
@@ -147,28 +148,24 @@ class Nimble(SyncAPIClient):
         context: str,
         claims: list[str],
         effort: Effort = "medium",
-        model: str = "nimble-latest",
+        split_claims: bool = True,
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
     ) -> FactcheckResponse:
-        """Score 1–64 claims against shared context in one Nimble request.
+        """Check 1–64 claims using low, medium or high effort.
 
-        Results preserve claim order, including duplicate claims. Medium uses one
-        Noul question per claim. Low and high are reserved and currently raise
-        NotImplementedError because the backend has no effort setting.
+        Claim splitting is enabled by default. Results preserve input order and
+        duplicates. The API reports billable input usage for the original batch.
         """
-        questions = prepare_factcheck(context=context, claims=claims, effort=effort)
-        claims = list(claims)
-        response = self.with_raw_response.system_one(
-            state=context,
-            questions=questions,
-            model=model,
-            extra_headers=extra_headers,
-            extra_query=extra_query,
-            timeout=timeout,
+        body = prepare_factcheck(context=context, claims=claims, effort=effort, split_claims=split_claims)
+        response = self.post(
+            "/v1/nimble/factcheck",
+            body=body,
+            cast_to=object,
+            options=make_request_options(extra_headers=extra_headers, extra_query=extra_query, timeout=timeout),
         )
-        return parse_factcheck(claims=claims, response=response.json())
+        return parse_factcheck(claims=body["claims"], effort=effort, response=response)
 
     @property
     @override
@@ -367,29 +364,24 @@ class AsyncNimble(AsyncAPIClient):
         context: str,
         claims: list[str],
         effort: Effort = "medium",
-        model: str = "nimble-latest",
+        split_claims: bool = True,
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
     ) -> FactcheckResponse:
-        """Score 1–64 claims against shared context in one Nimble request.
+        """Check 1–64 claims using low, medium or high effort.
 
-        Results preserve claim order, including duplicate claims. Medium uses one
-        Noul question per claim. Low and high are reserved and currently raise
-        NotImplementedError because the backend has no effort setting.
+        Claim splitting is enabled by default. Results preserve input order and
+        duplicates. The API reports billable input usage for the original batch.
         """
-        questions = prepare_factcheck(context=context, claims=claims, effort=effort)
-        # Snapshot input before awaiting so caller mutations cannot change result order.
-        claims = list(claims)
-        response = await self.with_raw_response.system_one(
-            state=context,
-            questions=questions,
-            model=model,
-            extra_headers=extra_headers,
-            extra_query=extra_query,
-            timeout=timeout,
+        body = prepare_factcheck(context=context, claims=claims, effort=effort, split_claims=split_claims)
+        response = await self.post(
+            "/v1/nimble/factcheck",
+            body=body,
+            cast_to=object,
+            options=make_request_options(extra_headers=extra_headers, extra_query=extra_query, timeout=timeout),
         )
-        return parse_factcheck(claims=claims, response=await response.json())
+        return parse_factcheck(claims=body["claims"], effort=effort, response=response)
 
     @property
     @override
