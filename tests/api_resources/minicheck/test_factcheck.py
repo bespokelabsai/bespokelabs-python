@@ -7,9 +7,9 @@ from typing import Any, cast
 
 import pytest
 
-from bespokelabs import BespokeLabs, AsyncBespokeLabs
 from tests.utils import assert_matches_type
-from bespokelabs.types.minicheck import FactcheckCreateResponse
+from bespokelabs.nimble import BespokeLabs, AsyncBespokeLabs
+from bespokelabs.nimble.types.minicheck import FactcheckCreateResponse
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 

@@ -5,8 +5,8 @@ from typing import Iterator, AsyncIterator
 import httpx
 import pytest
 
-from bespokelabs import BespokeLabs, AsyncBespokeLabs
-from bespokelabs._streaming import Stream, AsyncStream, ServerSentEvent
+from bespokelabs.nimble import BespokeLabs, AsyncBespokeLabs
+from bespokelabs.nimble._streaming import Stream, AsyncStream, ServerSentEvent
 
 
 @pytest.mark.asyncio

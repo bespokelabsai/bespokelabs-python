@@ -8,15 +8,15 @@ from typing_extensions import Required, Annotated, TypedDict
 
 import pytest
 
-from bespokelabs._types import Base64FileInput
-from bespokelabs._utils import (
+from bespokelabs.nimble._types import Base64FileInput
+from bespokelabs.nimble._utils import (
     PropertyInfo,
     transform as _transform,
     parse_datetime,
     async_transform as _async_transform,
 )
-from bespokelabs._compat import PYDANTIC_V2
-from bespokelabs._models import BaseModel
+from bespokelabs.nimble._compat import PYDANTIC_V2
+from bespokelabs.nimble._models import BaseModel
 
 _T = TypeVar("_T")
 

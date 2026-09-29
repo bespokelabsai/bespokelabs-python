@@ -5,10 +5,12 @@ from ._types import NOT_GIVEN, Omit, NoneType, NotGiven, Transport, ProxiesTypes
 from ._utils import file_from_path
 from ._client import (
     Client,
+    Nimble,
     Stream,
     Timeout,
     Transport,
     AsyncClient,
+    AsyncNimble,
     AsyncStream,
     BespokeLabs,
     RequestOptions,
@@ -63,6 +65,8 @@ __all__ = [
     "InternalServerError",
     "Timeout",
     "RequestOptions",
+    "Nimble",
+    "AsyncNimble",
     "Client",
     "AsyncClient",
     "Stream",
@@ -83,12 +87,12 @@ _setup_logging()
 # Update the __module__ attribute for exported symbols so that
 # error messages point to this module instead of the module
 # it was originally defined in, e.g.
-# bespokelabs._exceptions.NotFoundError -> bespokelabs.NotFoundError
+# bespokelabs.nimble._exceptions.NotFoundError -> bespokelabs.nimble.NotFoundError
 __locals = locals()
 for __name in __all__:
     if not __name.startswith("__"):
         try:
-            __locals[__name].__module__ = "bespokelabs"
+            __locals[__name].__module__ = "bespokelabs.nimble"
         except (TypeError, AttributeError):
             # Some of our exported symbols are builtins which we can't set attributes for.
             pass

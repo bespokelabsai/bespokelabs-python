@@ -7,9 +7,9 @@ import pytest
 import pydantic
 from pydantic import Field
 
-from bespokelabs._utils import PropertyInfo
-from bespokelabs._compat import PYDANTIC_V2, parse_obj, model_dump, model_json
-from bespokelabs._models import BaseModel, construct_type
+from bespokelabs.nimble._utils import PropertyInfo
+from bespokelabs.nimble._compat import PYDANTIC_V2, parse_obj, model_dump, model_json
+from bespokelabs.nimble._models import BaseModel, construct_type
 
 
 class BasicModel(BaseModel):

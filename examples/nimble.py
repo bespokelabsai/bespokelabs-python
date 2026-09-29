@@ -1,9 +1,9 @@
 """Set BESPOKE_API_KEY; optionally set BESPOKE_LABS_BASE_URL to your gateway."""
 
-from bespokelabs import BespokeLabs
+from bespokelabs import nimble
 
-with BespokeLabs() as client:
-    response = client.nimble.system_one(
+with nimble.Nimble() as client:
+    response = client.system_one(
         state="Please refund the duplicate payment.",
         questions={
             "refund": {"type": "noul", "instructions": "Does the customer request a refund?"},

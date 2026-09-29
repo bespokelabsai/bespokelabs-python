@@ -8,8 +8,8 @@ from typing import Any, TypeVar, Iterator, cast
 from datetime import date, datetime
 from typing_extensions import Literal, get_args, get_origin, assert_type
 
-from bespokelabs._types import Omit, NoneType
-from bespokelabs._utils import (
+from bespokelabs.nimble._types import Omit, NoneType
+from bespokelabs.nimble._utils import (
     is_dict,
     is_list,
     is_list_type,
@@ -18,8 +18,8 @@ from bespokelabs._utils import (
     is_annotated_type,
     is_type_alias_type,
 )
-from bespokelabs._compat import PYDANTIC_V2, field_outer_type, get_model_fields
-from bespokelabs._models import BaseModel
+from bespokelabs.nimble._compat import PYDANTIC_V2, field_outer_type, get_model_fields
+from bespokelabs.nimble._models import BaseModel
 
 BaseModelT = TypeVar("BaseModelT", bound=BaseModel)
 
