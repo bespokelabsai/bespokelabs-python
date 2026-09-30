@@ -240,6 +240,75 @@ Use `await client.factcheck(...)` with `AsyncNimble`. Both clients accept
 `model` is not an argument to this method. The legacy
 `client.minicheck.factcheck.create(claim=..., context=...)` is unchanged.
 
+## Code relevance scoring
+
+Use explicit `state` and named `questions` with `codegrep`. The helper preserves
+both unchanged and selects the requested effort.
+
+```python
+from bespokelabs import nimble
+
+with nimble.Nimble() as client:
+    result = client.codegrep(
+        state={
+            "query": "Find where failed uploads are retried",
+            "items": [
+                {
+                    "id": "n0",
+                    "path": "upload.py",
+                    "kind": "file",
+                    "filePreview": {"text": "def retry_upload(): ..."},
+                }
+            ],
+        },
+        questions={
+            "q0": {
+                "type": "noul",
+                "instructions": "Is this file useful for answering the query?",
+            }
+        },
+        effort="medium",
+    )
+    print(result.answers["q0"].noul)
+    print(result.details["q0"].overflow)
+    print(result.escalation_skipped)
+```
+
+`state` is a string or JSON object, with at most 2 million characters under the
+service's state-size check. `questions` contains 1–128 `noul` or `boolean`
+questions. Instructions may be text, an object, or a list; optional `criteria`
+describe `true` and `false`. The complete JSON request must fit within 16 MiB.
+
+For a state containing multiple items, question `q0` addresses item `n0`, `q1`
+addresses `n1`, and so on. With a single item, any question ID is accepted. A state
+without items is used whole for every question. The helper does not generate IDs
+or questions.
+
+- `low` scores each question with the small model.
+- `medium` (default) rechecks uncertain questions with the larger model.
+- `high` uses the larger model for every question.
+
+Answers are calibrated relevance scores: values above 0.5 mean keep the item at
+the model's calibrated operating point. They are not probabilities of factual
+truth. Each question has typed `details` containing `raw`, `overflow`, `escalated`,
+and per-model `scores`. If an item exceeds the model's context limit, its answer
+is 1.0 and `overflow=True`, with `raw=None`: it was kept without being scored.
+
+Medium may return a successful response with `escalation_skipped=True` when the
+larger model is unavailable. The smaller model's answers remain available;
+callers can inspect the flag before relying on the result.
+
+Input rates are $0.02 / $0.04 / $0.12 per million tokens for low / medium / high.
+Input usage counts the actual per-item prompts, including extra model calls at
+medium effort. Identical prompts can be deduplicated by the service. Output usage
+is reported but carries no charge. A medium fallback is charged for its returned
+input usage at the medium rate. Failed requests have no usage charge.
+
+Use `await client.codegrep(...)` with `AsyncNimble`. Both clients accept
+`extra_headers`, `extra_query`, and `timeout`, and use the existing API key and
+retry settings. `model` is selected by effort. The helper returns a
+`CodegrepResponse`; it has no raw or streaming variant.
+
 ## Async usage
 
 Simply import `AsyncNimble` instead of `Nimble` and use `await` with each API call:
