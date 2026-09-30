@@ -14,12 +14,6 @@ from .types.factcheck_response import Effort
 CODEGREP_MODELS = {f"nimble-codegrep-{effort}": effort for effort in ("low", "medium", "high")}
 
 
-def codegrep_model(effort: Effort) -> str:
-    if effort not in ("low", "medium", "high"):
-        raise ValueError("effort must be 'low', 'medium', or 'high'")
-    return f"nimble-codegrep-{effort}"
-
-
 def prepare_codegrep(*, state: object, questions: object, effort: Effort) -> dict[str, Any]:
     if effort not in ("low", "medium", "high"):
         raise ValueError("effort must be 'low', 'medium', or 'high'")

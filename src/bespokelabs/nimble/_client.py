@@ -27,7 +27,6 @@ from ._utils import (
     get_async_library,
 )
 from ._version import __version__
-from ._codegrep import codegrep_model
 from .resources import nimble
 from ._factcheck import parse_factcheck, prepare_factcheck
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
@@ -39,7 +38,6 @@ from ._base_client import (
     make_request_options,
 )
 from .types.nimble import Content, Question, SystemOneResponse
-from .types.codegrep import CodegrepState, CodegrepQuestion, CodegrepResponse
 from .resources.minicheck import minicheck
 from .types.factcheck_response import Effort, FactcheckResponse
 
@@ -141,30 +139,6 @@ class Nimble(SyncAPIClient):
             extra_headers=extra_headers,
             extra_query=extra_query,
             extra_body=extra_body,
-            timeout=timeout,
-        )
-
-    def codegrep(
-        self,
-        *,
-        state: CodegrepState,
-        questions: dict[str, CodegrepQuestion],
-        effort: Effort = "medium",
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> CodegrepResponse:
-        """Score explicit relevance questions against code-search state.
-
-        Accepts up to 128 noul/boolean questions. IDs and state pass through
-        unchanged. A medium-tier fallback is returned with escalation_skipped.
-        """
-        return self.system_one(
-            state=state,
-            questions=questions,
-            model=codegrep_model(effort),
-            extra_headers=extra_headers,
-            extra_query=extra_query,
             timeout=timeout,
         )
 
@@ -381,30 +355,6 @@ class AsyncNimble(AsyncAPIClient):
             extra_headers=extra_headers,
             extra_query=extra_query,
             extra_body=extra_body,
-            timeout=timeout,
-        )
-
-    async def codegrep(
-        self,
-        *,
-        state: CodegrepState,
-        questions: dict[str, CodegrepQuestion],
-        effort: Effort = "medium",
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> CodegrepResponse:
-        """Score explicit relevance questions against code-search state.
-
-        Accepts up to 128 noul/boolean questions. IDs and state pass through
-        unchanged. A medium-tier fallback is returned with escalation_skipped.
-        """
-        return await self.system_one(
-            state=state,
-            questions=questions,
-            model=codegrep_model(effort),
-            extra_headers=extra_headers,
-            extra_query=extra_query,
             timeout=timeout,
         )
 

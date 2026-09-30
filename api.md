@@ -70,8 +70,3 @@ The response preserves question IDs in `answers` and typed `details`, with usage
 and an `escalation_skipped` flag for medium fallback. Overflow answers are 1.0
 with `raw=None` and `overflow=True`. Normal, raw, and streaming response access
 works with both synchronous and asynchronous clients.
-
-`client.codegrep(state=..., questions=..., effort="medium")` and its async version
-are convenience wrappers over `system_one`; effort selects the model. They return
-the same `SystemOneResponse` (`CodegrepResponse` is a type alias) and accept
-`extra_headers`, `extra_query`, and `timeout`.

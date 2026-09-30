@@ -281,7 +281,7 @@ describe `true` and `false`. The complete JSON request must fit within 1 MiB.
 
 For a state containing multiple items, question `q0` addresses item `n0`, `q1`
 addresses `n1`, and so on. With a single item, any question ID is accepted. A state
-without items is used whole for every question. The helper does not generate IDs
+without items is used whole for every question. The SDK does not generate IDs
 or questions.
 
 - `nimble-codegrep-low` scores each question with the small model.
@@ -304,16 +304,13 @@ medium effort. Identical prompts can be deduplicated by the service. Output usag
 is reported but carries no charge. A medium fallback is charged for its returned
 input usage at the medium rate. Failed requests have no usage charge.
 
-The convenience helper `client.codegrep(state=..., questions=..., effort="medium")`
-selects `nimble-codegrep-medium` and calls the same `system_one` method. It also
-accepts `low` and `high`; medium is its default. Both entry points return
-`SystemOneResponse` with typed metadata; `CodegrepResponse` is an alias for it.
-General System One responses have empty `details` and `escalation_skipped=False`
-when those fields are absent.
+Codegrep returns `SystemOneResponse` with typed metadata; `CodegrepResponse` is an
+alias for it. General System One responses have empty `details` and
+`escalation_skipped=False` when those fields are absent.
 
-Both APIs support sync and async clients, request options, and existing API keys
-and retry settings. System One's raw and streaming response wrappers also support
-Codegrep models. The helper has no separate raw or streaming variant.
+Use `system_one` with sync or async clients, request options, and existing API
+keys and retry settings. Raw and streaming response wrappers also support
+Codegrep models.
 
 ## Async usage
 

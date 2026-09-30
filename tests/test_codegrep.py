@@ -58,7 +58,7 @@ async def test_explicit_questions_and_state(effort: str, use_async: bool, strict
     kwargs: Any = {
         "state": STATE,
         "questions": questions,
-        "effort": effort,
+        "model": f"nimble-codegrep-{effort}",
         "extra_headers": {"x-custom": "value"},
         "extra_query": {"trace": "1"},
         "timeout": 7,
@@ -69,14 +69,14 @@ async def test_explicit_questions_and_state(effort: str, use_async: bool, strict
             _strict_response_validation=strict,
             http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
         ) as client:
-            result = await client.with_options(max_retries=0).codegrep(**kwargs)
+            result = await client.with_options(max_retries=0).system_one(**kwargs)
     else:
         with nimble.Nimble(
             api_key="test",
             _strict_response_validation=strict,
             http_client=httpx.Client(transport=httpx.MockTransport(handler)),
         ) as client:
-            result = client.with_options(max_retries=0).codegrep(**kwargs)
+            result = client.with_options(max_retries=0).system_one(**kwargs)
     assert len(seen) == 1
     assert isinstance(result, CodegrepResponse)
     assert isinstance(result.details["q7"], CodegrepDetail)
@@ -94,7 +94,9 @@ def test_fallback_and_unscored_items_are_visible(fallback: bool, overflow: bool)
         return httpx.Response(200, json=response_for(body, fallback=fallback, overflow=overflow))
 
     with nimble.Nimble(api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
-        result = client.codegrep(state=STATE, questions={"q7": {"type": "noul", "instructions": "Useful?"}})
+        result = client.system_one(
+            model="nimble-codegrep-medium", state=STATE, questions={"q7": {"type": "noul", "instructions": "Useful?"}}
+        )
     assert result.escalation_skipped is fallback
     assert result.details["q7"].overflow is overflow
     assert (result.details["q7"].raw is None) is overflow
@@ -109,8 +111,10 @@ def test_128_questions_supported(state: Any) -> None:
         return httpx.Response(200, json=response_for(body))
 
     with nimble.Nimble(api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
-        result = client.codegrep(
-            state=state, questions={f"q{i}": {"type": "boolean", "instructions": "Useful?"} for i in range(128)}
+        result = client.system_one(
+            model="nimble-codegrep-medium",
+            state=state,
+            questions={f"q{i}": {"type": "boolean", "instructions": "Useful?"} for i in range(128)},
         )
     assert len(result.answers) == 128
 
@@ -121,7 +125,7 @@ def test_128_questions_supported(state: Any) -> None:
         {"state": []},
         {"state": " "},
         {"state": "x" * 2_000_001},
-        {"effort": "ultra"},
+        {"model": "nimble-codegrep-ultra"},
         {"questions": {}},
         {"questions": {str(i): {"type": "noul", "instructions": "Useful?"} for i in range(129)}},
         {"questions": {"q": {"type": "choice", "instructions": "Useful?"}}},
@@ -135,17 +139,22 @@ async def test_invalid_input_not_sent(overrides: dict[str, Any], use_async: bool
     def handler(request: httpx.Request) -> httpx.Response:
         pytest.fail(f"Unexpected request {request.url}")
 
-    kwargs: Any = {"state": STATE, "questions": {"q7": {"type": "noul", "instructions": "Useful?"}}, **overrides}
+    kwargs: Any = {
+        "model": "nimble-codegrep-medium",
+        "state": STATE,
+        "questions": {"q7": {"type": "noul", "instructions": "Useful?"}},
+        **overrides,
+    }
     if use_async:
         async with nimble.AsyncNimble(
             api_key="test", http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler))
         ) as client:
             with pytest.raises(ValueError):
-                await client.codegrep(**kwargs)
+                await client.system_one(**kwargs)
     else:
         with nimble.Nimble(api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
             with pytest.raises(ValueError):
-                client.codegrep(**kwargs)
+                client.system_one(**kwargs)
 
 
 @pytest.mark.parametrize(
@@ -182,7 +191,11 @@ def test_malformed_responses(field: str, value: Any) -> None:
 
     with nimble.Nimble(api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
         with pytest.raises(ValueError, match="Invalid Codegrep response"):
-            client.codegrep(state=STATE, questions={"q7": {"type": "noul", "instructions": "Useful?"}})
+            client.system_one(
+                model="nimble-codegrep-medium",
+                state=STATE,
+                questions={"q7": {"type": "noul", "instructions": "Useful?"}},
+            )
 
 
 def test_standard_retry_behavior() -> None:
@@ -195,7 +208,9 @@ def test_standard_retry_behavior() -> None:
         return httpx.Response(200, json=response_for(json.loads(request.content)))
 
     with nimble.Nimble(api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
-        result = client.codegrep(state=STATE, questions={"q7": {"type": "noul", "instructions": "Useful?"}})
+        result = client.system_one(
+            model="nimble-codegrep-medium", state=STATE, questions={"q7": {"type": "noul", "instructions": "Useful?"}}
+        )
     assert len(seen) == 2 and not result.escalation_skipped
 
 
