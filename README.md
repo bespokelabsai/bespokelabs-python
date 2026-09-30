@@ -240,6 +240,78 @@ Use `await client.factcheck(...)` with `AsyncNimble`. Both clients accept
 `model` is not an argument to this method. The legacy
 `client.minicheck.factcheck.create(claim=..., context=...)` is unchanged.
 
+## Code relevance scoring
+
+Use `system_one` with a Codegrep model name and your existing `state` and named
+`questions`. The model selects the effort, validation limits, and billing rate.
+
+```python
+from bespokelabs import nimble
+
+with nimble.Nimble() as client:
+    result = client.system_one(
+        state={
+            "query": "Find where failed uploads are retried",
+            "items": [
+                {
+                    "id": "n0",
+                    "path": "upload.py",
+                    "kind": "file",
+                    "filePreview": {"text": "def retry_upload(): ..."},
+                }
+            ],
+        },
+        questions={
+            "q0": {
+                "type": "noul",
+                "instructions": "Is this file useful for answering the query?",
+            }
+        },
+        model="nimble-codegrep-medium",
+    )
+    print(result.nouls["q0"].noul)
+    print(result.details["q0"].overflow)
+    print(result.escalation_skipped)
+```
+
+`state` is a string or JSON object, with at most 2 million characters under the
+service's state-size check. `questions` contains 1–128 `noul` or `boolean`
+questions. Instructions may be text, an object, or a list; optional `criteria`
+describe `true` and `false`. The complete JSON request must fit within 1 MiB.
+
+For a state containing multiple items, question `q0` addresses item `n0`, `q1`
+addresses `n1`, and so on. With a single item, any question ID is accepted. A state
+without items is used whole for every question. The SDK does not generate IDs
+or questions.
+
+- `nimble-codegrep-low` scores each question with the small model.
+- `nimble-codegrep-medium` rechecks uncertain questions with the larger model.
+- `nimble-codegrep-high` uses the larger model for every question.
+
+Answers are calibrated relevance scores: values above 0.5 mean keep the item at
+the model's calibrated operating point. They are not probabilities of factual
+truth. Each question has typed `details` containing `raw`, `overflow`, `escalated`,
+and per-model `scores`. If an item exceeds the model's context limit, its answer
+is 1.0 and `overflow=True`, with `raw=None`: it was kept without being scored.
+
+Medium may return a successful response with `escalation_skipped=True` when the
+larger model is unavailable. The smaller model's answers remain available;
+callers can inspect the flag before relying on the result.
+
+Input rates are $0.02 / $0.04 / $0.12 per million tokens for low / medium / high.
+Input usage counts the actual per-item prompts, including extra model calls at
+medium effort. Identical prompts can be deduplicated by the service. Output usage
+is reported but carries no charge. A medium fallback is charged for its returned
+input usage at the medium rate. Failed requests have no usage charge.
+
+Codegrep returns `SystemOneResponse` with typed metadata; `CodegrepResponse` is an
+alias for it. General System One responses have empty `details` and
+`escalation_skipped=False` when those fields are absent.
+
+Use `system_one` with sync or async clients, request options, and existing API
+keys and retry settings. Raw and streaming response wrappers also support
+Codegrep models.
+
 ## Async usage
 
 Simply import `AsyncNimble` instead of `Nimble` and use `await` with each API call:

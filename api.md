@@ -53,3 +53,20 @@ billable input usage, support decisions, and available escalation metadata.
 
 `BespokeLabs` / `AsyncBespokeLabs` and `Client` / `AsyncClient` are compatibility
 aliases. The nested `client.nimble.system_one` interface remains available.
+
+## Codegrep models
+
+```python
+from bespokelabs.nimble.types import CodegrepQuestion, CodegrepDetail, CodegrepResponse
+```
+
+- `client.system_one(state=..., questions={...}, model="nimble-codegrep-medium") -> SystemOneResponse`
+- `await async_client.system_one(state=..., questions={...}, model="nimble-codegrep-medium") -> SystemOneResponse`
+
+Use `nimble-codegrep-low`, `nimble-codegrep-medium`, or `nimble-codegrep-high`
+through `POST /v1/nimble/systemone`. Codegrep supports 1–128 `noul`/`boolean`
+questions and string/object state, within the shared 1 MiB request-body limit.
+The response preserves question IDs in `answers` and typed `details`, with usage
+and an `escalation_skipped` flag for medium fallback. Overflow answers are 1.0
+with `raw=None` and `overflow=True`. Normal, raw, and streaming response access
+works with both synchronous and asynchronous clients.

@@ -124,14 +124,14 @@ class Nimble(SyncAPIClient):
         self,
         *,
         state: Content,
-        questions: dict[str, Question],
+        questions: Mapping[str, Question],
         model: str = "nimble-latest",
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
     ) -> SystemOneResponse:
-        """Evaluate up to 64 typed questions against shared state in one request."""
+        """Evaluate typed questions; model selects the service and its limits."""
         return self.nimble.system_one(
             state=state,
             questions=questions,
@@ -340,14 +340,14 @@ class AsyncNimble(AsyncAPIClient):
         self,
         *,
         state: Content,
-        questions: dict[str, Question],
+        questions: Mapping[str, Question],
         model: str = "nimble-latest",
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
     ) -> SystemOneResponse:
-        """Evaluate up to 64 typed questions against shared state in one request."""
+        """Evaluate typed questions; model selects the service and its limits."""
         return await self.nimble.system_one(
             state=state,
             questions=questions,

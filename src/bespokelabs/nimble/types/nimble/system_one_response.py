@@ -3,16 +3,18 @@
 from typing import Dict, Union, Optional
 from typing_extensions import Literal, Annotated
 
+from pydantic import Field
+
 from ..._utils import PropertyInfo
 from ..._models import BaseModel
 
-__all__ = ["NoulAnswer", "ChoiceAnswer", "ScoreAnswer", "Answer", "Usage", "SystemOneResponse"]
+__all__ = ["NoulAnswer", "ChoiceAnswer", "ScoreAnswer", "Answer", "Usage", "SystemOneResponse", "CodegrepDetail"]
 
 
 class NoulAnswer(BaseModel):
     type: Literal["noul"]
     noul: float
-    """Probability of true, normalized over the two candidates."""
+    """Score for true; Codegrep models return calibrated relevance."""
 
 
 class ChoiceAnswer(BaseModel):
@@ -40,11 +42,24 @@ class Usage(BaseModel):
     output_tokens: int
 
 
+class CodegrepDetail(BaseModel):
+    raw: Optional[float]
+    """Uncalibrated probability; None when the item was too long to score."""
+    overflow: bool
+    escalated: bool
+    scores: Dict[str, Optional[float]]
+    """Raw probabilities for the models that evaluated this question."""
+
+
 class SystemOneResponse(BaseModel):
     model: str
     answers: Dict[str, Answer]
     usage: Usage
     request_id: Optional[str] = None
+    details: Dict[str, CodegrepDetail] = Field(default_factory=dict)
+    """Per-question metadata when the selected model is Codegrep."""
+    escalation_skipped: bool = False
+    """Whether Codegrep medium returned its smaller model fallback."""
 
     @property
     def nouls(self) -> Dict[str, NoulAnswer]:

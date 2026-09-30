@@ -2,14 +2,19 @@
 
 from __future__ import annotations
 
+from typing import Mapping, cast
+from functools import partial
+
 import httpx
 
 from .._types import NOT_GIVEN, Body, Query, Headers, NotGiven
 from .._utils import (
+    is_mapping,
     maybe_transform,
     async_maybe_transform,
 )
 from .._compat import cached_property
+from .._codegrep import CODEGREP_MODELS, parse_codegrep, prepare_codegrep
 from .._resource import SyncAPIResource, AsyncAPIResource
 from .._response import (
     to_raw_response_wrapper,
@@ -19,6 +24,7 @@ from .._response import (
 )
 from .._base_client import make_request_options
 from ..types.nimble import system_one_params
+from ..types.factcheck_response import Effort
 from ..types.nimble.system_one_params import Content, Question
 from ..types.nimble.system_one_response import SystemOneResponse
 
@@ -49,7 +55,7 @@ class NimbleResource(SyncAPIResource):
         self,
         *,
         state: Content,
-        questions: dict[str, Question],
+        questions: Mapping[str, Question],
         model: str = "nimble-latest",
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -64,9 +70,9 @@ class NimbleResource(SyncAPIResource):
         Args:
           state: Text, structured JSON, or a text transcript to evaluate.
 
-          questions: Named Noul, Choice, or Score question dictionaries.
+          questions: Named question dictionaries. Codegrep supports noul/boolean questions.
 
-          model: Hosted model name or alias.
+          model: Hosted model name or alias, including nimble-codegrep-low/medium/high.
 
           extra_headers: Send extra headers
 
@@ -76,6 +82,33 @@ class NimbleResource(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
+        overrides: Mapping[str, object] = extra_body if is_mapping(extra_body) else {}
+        selected_model = overrides.get("model", model)
+        if isinstance(selected_model, str) and selected_model.startswith("nimble-codegrep"):
+            if selected_model not in CODEGREP_MODELS:
+                raise ValueError("Unknown Codegrep model; use nimble-codegrep-low, -medium, or -high")
+            body = prepare_codegrep(
+                state=overrides.get("state", state),
+                questions=overrides.get("questions", questions),
+                effort=cast(Effort, CODEGREP_MODELS[selected_model]),
+            )
+            body.pop("effort")
+            body["model"] = selected_model
+            return cast(
+                SystemOneResponse,
+                self._post(
+                    "/v1/nimble/systemone",
+                    body=body,
+                    cast_to=object,
+                    options=make_request_options(
+                        extra_headers=extra_headers,
+                        extra_query=extra_query,
+                        extra_body=extra_body,
+                        timeout=timeout,
+                        post_parser=partial(parse_codegrep, question_ids=list(body["questions"])),
+                    ),
+                ),
+            )
         return self._post(
             "/v1/nimble/systemone",
             body=maybe_transform(
@@ -117,7 +150,7 @@ class AsyncNimbleResource(AsyncAPIResource):
         self,
         *,
         state: Content,
-        questions: dict[str, Question],
+        questions: Mapping[str, Question],
         model: str = "nimble-latest",
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -132,9 +165,9 @@ class AsyncNimbleResource(AsyncAPIResource):
         Args:
           state: Text, structured JSON, or a text transcript to evaluate.
 
-          questions: Named Noul, Choice, or Score question dictionaries.
+          questions: Named question dictionaries. Codegrep supports noul/boolean questions.
 
-          model: Hosted model name or alias.
+          model: Hosted model name or alias, including nimble-codegrep-low/medium/high.
 
           extra_headers: Send extra headers
 
@@ -144,6 +177,33 @@ class AsyncNimbleResource(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
+        overrides: Mapping[str, object] = extra_body if is_mapping(extra_body) else {}
+        selected_model = overrides.get("model", model)
+        if isinstance(selected_model, str) and selected_model.startswith("nimble-codegrep"):
+            if selected_model not in CODEGREP_MODELS:
+                raise ValueError("Unknown Codegrep model; use nimble-codegrep-low, -medium, or -high")
+            body = prepare_codegrep(
+                state=overrides.get("state", state),
+                questions=overrides.get("questions", questions),
+                effort=cast(Effort, CODEGREP_MODELS[selected_model]),
+            )
+            body.pop("effort")
+            body["model"] = selected_model
+            return cast(
+                SystemOneResponse,
+                await self._post(
+                    "/v1/nimble/systemone",
+                    body=body,
+                    cast_to=object,
+                    options=make_request_options(
+                        extra_headers=extra_headers,
+                        extra_query=extra_query,
+                        extra_body=extra_body,
+                        timeout=timeout,
+                        post_parser=partial(parse_codegrep, question_ids=list(body["questions"])),
+                    ),
+                ),
+            )
         return await self._post(
             "/v1/nimble/systemone",
             body=await async_maybe_transform(
