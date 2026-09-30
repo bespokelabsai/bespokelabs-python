@@ -45,14 +45,14 @@ async def test_explicit_questions_and_state(effort: str, use_async: bool, strict
 
     def handler(request: httpx.Request) -> httpx.Response:
         seen.append(request)
-        assert request.url.path == "/v1/nimble/codegrep"
+        assert request.url.path == "/v1/nimble/systemone"
         assert request.headers["api_key"] == "test"
         assert "authorization" not in request.headers
         assert request.headers["x-custom"] == "value"
         assert request.url.params["trace"] == "1"
         assert request.extensions["timeout"]["read"] == 7
         body = json.loads(request.content)
-        assert body == {"state": STATE, "questions": questions, "effort": effort}
+        assert body == {"state": STATE, "questions": questions, "model": f"nimble-codegrep-{effort}"}
         return httpx.Response(200, json=response_for(body))
 
     kwargs: Any = {
@@ -90,7 +90,7 @@ async def test_explicit_questions_and_state(effort: str, use_async: bool, strict
 def test_fallback_and_unscored_items_are_visible(fallback: bool, overflow: bool) -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         body = json.loads(request.content)
-        assert body["effort"] == "medium"
+        assert body["model"] == "nimble-codegrep-medium"
         return httpx.Response(200, json=response_for(body, fallback=fallback, overflow=overflow))
 
     with nimble.Nimble(api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
@@ -197,3 +197,89 @@ def test_standard_retry_behavior() -> None:
     with nimble.Nimble(api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
         result = client.codegrep(state=STATE, questions={"q7": {"type": "noul", "instructions": "Useful?"}})
     assert len(seen) == 2 and not result.escalation_skipped
+
+
+@pytest.mark.parametrize("effort", ["low", "medium", "high"])
+@pytest.mark.parametrize("use_async", [False, True])
+@pytest.mark.parametrize("nested", [False, True])
+@pytest.mark.parametrize("surface", ["normal", "raw", "streaming"])
+@pytest.mark.parametrize("strict", [False, True])
+async def test_system_one_model_selection(
+    effort: str, use_async: bool, nested: bool, surface: str, strict: bool
+) -> None:
+    from bespokelabs.nimble.types.nimble import SystemOneResponse
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/v1/nimble/systemone"
+        assert request.headers["api_key"] == "test"
+        body = json.loads(request.content)
+        assert body["model"] == f"nimble-codegrep-{effort}"
+        assert "effort" not in body
+        return httpx.Response(200, json=response_for(body))
+
+    kwargs: Any = {
+        "state": STATE,
+        "questions": {"q7": {"type": "boolean", "instructions": "Useful?"}},
+        "model": f"nimble-codegrep-{effort}",
+    }
+    if use_async:
+        async with nimble.AsyncNimble(
+            api_key="test",
+            _strict_response_validation=strict,
+            http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
+        ) as client:
+            resource = client.nimble if nested else client
+            if surface == "normal":
+                result = await resource.system_one(**kwargs)
+            elif surface == "raw":
+                result = await (await resource.with_raw_response.system_one(**kwargs)).parse()
+            else:
+                async with resource.with_streaming_response.system_one(**kwargs) as response:
+                    result = await response.parse()
+    else:
+        with nimble.Nimble(
+            api_key="test",
+            _strict_response_validation=strict,
+            http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+        ) as client:
+            resource = client.nimble if nested else client
+            if surface == "normal":
+                result = resource.system_one(**kwargs)
+            elif surface == "raw":
+                result = resource.with_raw_response.system_one(**kwargs).parse()
+            else:
+                with resource.with_streaming_response.system_one(**kwargs) as response:
+                    result = response.parse()
+    assert isinstance(result, SystemOneResponse)
+    assert result.details["q7"].raw == 0.2
+    assert result.nouls["q7"].noul == 0.8
+    assert not result.escalation_skipped
+
+
+def test_model_override_in_extra_body_keeps_typed_metadata() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        assert body["model"] == "nimble-codegrep-high"
+        return httpx.Response(200, json=response_for(body, overflow=True))
+
+    with nimble.Nimble(api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
+        result = client.system_one(
+            state=STATE,
+            questions={"q7": {"type": "noul", "instructions": "Useful?"}},
+            extra_body={"model": "nimble-codegrep-high"},
+        )
+    assert result.details["q7"].overflow
+    assert result.details["q7"].raw is None
+
+
+def test_unknown_codegrep_model_is_rejected_locally() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        pytest.fail(f"Unexpected request: {request.url}")
+
+    with nimble.Nimble(api_key="test", http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
+        with pytest.raises(ValueError, match="Unknown Codegrep model"):
+            client.system_one(
+                state=STATE,
+                questions={"q7": {"type": "noul", "instructions": "Useful?"}},
+                model="nimble-codegrep-ultra",
+            )

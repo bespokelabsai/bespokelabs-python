@@ -242,14 +242,14 @@ Use `await client.factcheck(...)` with `AsyncNimble`. Both clients accept
 
 ## Code relevance scoring
 
-Use explicit `state` and named `questions` with `codegrep`. The helper preserves
-both unchanged and selects the requested effort.
+Use `system_one` with a Codegrep model name and your existing `state` and named
+`questions`. The model selects the effort, validation limits, and billing rate.
 
 ```python
 from bespokelabs import nimble
 
 with nimble.Nimble() as client:
-    result = client.codegrep(
+    result = client.system_one(
         state={
             "query": "Find where failed uploads are retried",
             "items": [
@@ -267,9 +267,9 @@ with nimble.Nimble() as client:
                 "instructions": "Is this file useful for answering the query?",
             }
         },
-        effort="medium",
+        model="nimble-codegrep-medium",
     )
-    print(result.answers["q0"].noul)
+    print(result.nouls["q0"].noul)
     print(result.details["q0"].overflow)
     print(result.escalation_skipped)
 ```
@@ -277,16 +277,16 @@ with nimble.Nimble() as client:
 `state` is a string or JSON object, with at most 2 million characters under the
 service's state-size check. `questions` contains 1–128 `noul` or `boolean`
 questions. Instructions may be text, an object, or a list; optional `criteria`
-describe `true` and `false`. The complete JSON request must fit within 16 MiB.
+describe `true` and `false`. The complete JSON request must fit within 1 MiB.
 
 For a state containing multiple items, question `q0` addresses item `n0`, `q1`
 addresses `n1`, and so on. With a single item, any question ID is accepted. A state
 without items is used whole for every question. The helper does not generate IDs
 or questions.
 
-- `low` scores each question with the small model.
-- `medium` (default) rechecks uncertain questions with the larger model.
-- `high` uses the larger model for every question.
+- `nimble-codegrep-low` scores each question with the small model.
+- `nimble-codegrep-medium` rechecks uncertain questions with the larger model.
+- `nimble-codegrep-high` uses the larger model for every question.
 
 Answers are calibrated relevance scores: values above 0.5 mean keep the item at
 the model's calibrated operating point. They are not probabilities of factual
@@ -304,10 +304,16 @@ medium effort. Identical prompts can be deduplicated by the service. Output usag
 is reported but carries no charge. A medium fallback is charged for its returned
 input usage at the medium rate. Failed requests have no usage charge.
 
-Use `await client.codegrep(...)` with `AsyncNimble`. Both clients accept
-`extra_headers`, `extra_query`, and `timeout`, and use the existing API key and
-retry settings. `model` is selected by effort. The helper returns a
-`CodegrepResponse`; it has no raw or streaming variant.
+The convenience helper `client.codegrep(state=..., questions=..., effort="medium")`
+selects `nimble-codegrep-medium` and calls the same `system_one` method. It also
+accepts `low` and `high`; medium is its default. Both entry points return
+`SystemOneResponse` with typed metadata; `CodegrepResponse` is an alias for it.
+General System One responses have empty `details` and `escalation_skipped=False`
+when those fields are absent.
+
+Both APIs support sync and async clients, request options, and existing API keys
+and retry settings. System One's raw and streaming response wrappers also support
+Codegrep models. The helper has no separate raw or streaming variant.
 
 ## Async usage
 

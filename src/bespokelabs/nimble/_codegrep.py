@@ -11,6 +11,14 @@ from ._factcheck import _count, _probability
 from .types.codegrep import CodegrepResponse
 from .types.factcheck_response import Effort
 
+CODEGREP_MODELS = {f"nimble-codegrep-{effort}": effort for effort in ("low", "medium", "high")}
+
+
+def codegrep_model(effort: Effort) -> str:
+    if effort not in ("low", "medium", "high"):
+        raise ValueError("effort must be 'low', 'medium', or 'high'")
+    return f"nimble-codegrep-{effort}"
+
 
 def prepare_codegrep(*, state: object, questions: object, effort: Effort) -> dict[str, Any]:
     if effort not in ("low", "medium", "high"):
@@ -43,10 +51,10 @@ def prepare_codegrep(*, state: object, questions: object, effort: Effort) -> dic
         ):
             raise ValueError("criteria must map true and false to strings")
     # Preserve caller IDs and snapshot nested data before an async request starts.
-    return copy.deepcopy({"state": state, "questions": questions, "effort": effort})
+    return copy.deepcopy({"state": state, "questions": dict(questions), "effort": effort})
 
 
-def parse_codegrep(*, question_ids: list[str], response: object) -> CodegrepResponse:
+def parse_codegrep(response: object, *, question_ids: list[str]) -> CodegrepResponse:
     if not is_mapping(response):
         raise ValueError("Invalid Codegrep response")
     answers, details = response.get("answers"), response.get("details")

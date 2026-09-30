@@ -27,7 +27,7 @@ from ._utils import (
     get_async_library,
 )
 from ._version import __version__
-from ._codegrep import parse_codegrep, prepare_codegrep
+from ._codegrep import codegrep_model
 from .resources import nimble
 from ._factcheck import parse_factcheck, prepare_factcheck
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
@@ -126,14 +126,14 @@ class Nimble(SyncAPIClient):
         self,
         *,
         state: Content,
-        questions: dict[str, Question],
+        questions: Mapping[str, Question],
         model: str = "nimble-latest",
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
     ) -> SystemOneResponse:
-        """Evaluate up to 64 typed questions against shared state in one request."""
+        """Evaluate typed questions; model selects the service and its limits."""
         return self.nimble.system_one(
             state=state,
             questions=questions,
@@ -159,14 +159,14 @@ class Nimble(SyncAPIClient):
         Accepts up to 128 noul/boolean questions. IDs and state pass through
         unchanged. A medium-tier fallback is returned with escalation_skipped.
         """
-        body = prepare_codegrep(state=state, questions=questions, effort=effort)
-        response = self.post(
-            "/v1/nimble/codegrep",
-            body=body,
-            cast_to=object,
-            options=make_request_options(extra_headers=extra_headers, extra_query=extra_query, timeout=timeout),
+        return self.system_one(
+            state=state,
+            questions=questions,
+            model=codegrep_model(effort),
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
         )
-        return parse_codegrep(question_ids=list(body["questions"]), response=response)
 
     def factcheck(
         self,
@@ -366,14 +366,14 @@ class AsyncNimble(AsyncAPIClient):
         self,
         *,
         state: Content,
-        questions: dict[str, Question],
+        questions: Mapping[str, Question],
         model: str = "nimble-latest",
         extra_headers: Headers | None = None,
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
     ) -> SystemOneResponse:
-        """Evaluate up to 64 typed questions against shared state in one request."""
+        """Evaluate typed questions; model selects the service and its limits."""
         return await self.nimble.system_one(
             state=state,
             questions=questions,
@@ -399,14 +399,14 @@ class AsyncNimble(AsyncAPIClient):
         Accepts up to 128 noul/boolean questions. IDs and state pass through
         unchanged. A medium-tier fallback is returned with escalation_skipped.
         """
-        body = prepare_codegrep(state=state, questions=questions, effort=effort)
-        response = await self.post(
-            "/v1/nimble/codegrep",
-            body=body,
-            cast_to=object,
-            options=make_request_options(extra_headers=extra_headers, extra_query=extra_query, timeout=timeout),
+        return await self.system_one(
+            state=state,
+            questions=questions,
+            model=codegrep_model(effort),
+            extra_headers=extra_headers,
+            extra_query=extra_query,
+            timeout=timeout,
         )
-        return parse_codegrep(question_ids=list(body["questions"]), response=response)
 
     async def factcheck(
         self,

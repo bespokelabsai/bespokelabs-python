@@ -54,19 +54,24 @@ billable input usage, support decisions, and available escalation metadata.
 `BespokeLabs` / `AsyncBespokeLabs` and `Client` / `AsyncClient` are compatibility
 aliases. The nested `client.nimble.system_one` interface remains available.
 
-## Codegrep
+## Codegrep models
 
 ```python
-from bespokelabs.nimble.types import CodegrepState, CodegrepQuestion, CodegrepDetail, CodegrepResponse
+from bespokelabs.nimble.types import CodegrepQuestion, CodegrepDetail, CodegrepResponse
 ```
 
-- `client.codegrep(state=..., questions={...}, effort="medium") -> CodegrepResponse`
-- `await async_client.codegrep(state=..., questions={...}, effort="medium") -> CodegrepResponse`
+- `client.system_one(state=..., questions={...}, model="nimble-codegrep-medium") -> SystemOneResponse`
+- `await async_client.system_one(state=..., questions={...}, model="nimble-codegrep-medium") -> SystemOneResponse`
 
-Sends explicit state and named questions to `POST /v1/nimble/codegrep`. Supports
-`low`, `medium`, and `high` effort, 1–128 `noul`/`boolean` questions, and a string or
-object state. The response preserves question IDs in `answers` and `details`,
-with usage and a visible `escalation_skipped` flag for medium fallback. Overflow
-answers are 1.0 with `raw=None` and `overflow=True`.
+Use `nimble-codegrep-low`, `nimble-codegrep-medium`, or `nimble-codegrep-high`
+through `POST /v1/nimble/systemone`. Codegrep supports 1–128 `noul`/`boolean`
+questions and string/object state, within the shared 1 MiB request-body limit.
+The response preserves question IDs in `answers` and typed `details`, with usage
+and an `escalation_skipped` flag for medium fallback. Overflow answers are 1.0
+with `raw=None` and `overflow=True`. Normal, raw, and streaming response access
+works with both synchronous and asynchronous clients.
 
-Both helpers accept `extra_headers`, `extra_query`, and `timeout`.
+`client.codegrep(state=..., questions=..., effort="medium")` and its async version
+are convenience wrappers over `system_one`; effort selects the model. They return
+the same `SystemOneResponse` (`CodegrepResponse` is a type alias) and accept
+`extra_headers`, `extra_query`, and `timeout`.

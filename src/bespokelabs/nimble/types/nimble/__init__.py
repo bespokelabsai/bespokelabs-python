@@ -4,6 +4,7 @@ from .system_one_params import (
     NoulQuestion as NoulQuestion,
     ScoreQuestion as ScoreQuestion,
     ChoiceQuestion as ChoiceQuestion,
+    BooleanQuestion as BooleanQuestion,
     SystemOneParams as SystemOneParams,
 )
 from .system_one_response import (
